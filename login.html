@@ -408,6 +408,10 @@
 
 <script>
   (function() {
+    // HARDCODED CREDENTIALS FOR TESTING
+    const VALID_EMAIL = 'admin@marlani.com';
+    const VALID_PASSWORD = 'Admin123!';
+
     // Handle login
     const form = document.querySelector('.user');
     if (form) {
@@ -421,15 +425,19 @@
           return;
         }
 
-        // Check against stored users
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const user = users.find(u => u.email === email && u.password === password);
-
-        if (user) {
-          // Store current user session
+        // Check against hardcoded credentials
+        if (email === VALID_EMAIL && password === VALID_PASSWORD) {
+          // Store user session
+          const user = { 
+            email: email, 
+            firstName: 'Admin', 
+            lastName: 'User',
+            role: 'Administrator',
+            password: 'paswrdmt1'
+          };
           localStorage.setItem('currentUser', JSON.stringify(user));
           alert('✅ Login successful! Redirecting...');
-          window.location.href = 'index.html'; // Change to your dashboard page
+          window.location.href = 'index.html';
         } else {
           alert('❌ Invalid email or password. Please try again.');
         }
