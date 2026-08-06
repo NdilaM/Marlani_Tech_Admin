@@ -1,7 +1,7 @@
 <?php
 
 $host = "Ndila-L";
-$dbname = "marlani_db";
+$dbname = "marlani";
 $user = "root";
 $pass = "";
 
