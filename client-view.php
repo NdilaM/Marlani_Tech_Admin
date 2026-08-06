@@ -1,65 +1,37 @@
 <?php
-// index.php - Dashboard
+// client-view.php - View Client Details
 session_start();
 
-// Check if user is logged in
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header('Location: login.html');
     exit();
 }
 
-// Include database connection
 require_once 'db.php';
 
-// Get user data from session
+$client_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+if ($client_id == 0) {
+    header('Location: clients.php');
+    exit();
+}
+
+// Get client info
+$stmt = $conn->prepare("SELECT * FROM clients WHERE id = ?");
+$stmt->execute([$client_id]);
+$client = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$client) {
+    header('Location: clients.php');
+    exit();
+}
+
+// Get quote count for this client
+$stmt = $conn->prepare("SELECT COUNT(*) as total FROM quotations WHERE client_id = ?");
+$stmt->execute([$client_id]);
+$quote_count = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
 $first_name = $_SESSION['first_name'] ?? 'User';
-$last_name = $_SESSION['last_name'] ?? '';
-$email = $_SESSION['email'] ?? '';
-$staff_id = $_SESSION['staff_id'] ?? '';
-
-// Get total employees count
-$stmt = $conn->query("SELECT COUNT(*) as total FROM staff");
-$total_staff = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-
-// Get recent registrations (last 5)
-$stmt = $conn->query("SELECT first_name, last_name, email, created_at FROM staff ORDER BY created_at DESC LIMIT 5");
-$recent_staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Get new this week
-$stmt = $conn->query("SELECT COUNT(*) as new FROM staff WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
-$new_count = $stmt->fetch(PDO::FETCH_ASSOC)['new'];
-
-// ============================================
-// CLIENT STATISTICS
-// ============================================
-// Get total clients
-$stmt = $conn->query("SELECT COUNT(*) as total FROM clients");
-$total_clients = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-
-// Get client status breakdown
-$stmt = $conn->query("
-    SELECT 
-        COUNT(*) as total,
-        SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
-        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-        SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive,
-        SUM(CASE WHEN status = 'suspended' THEN 1 ELSE 0 END) as suspended
-    FROM clients
-");
-$client_stats = $stmt->fetch(PDO::FETCH_ASSOC);
-
-$active_clients = $client_stats['active'] ?? 0;
-$pending_clients = $client_stats['pending'] ?? 0;
-$inactive_clients = $client_stats['inactive'] ?? 0;
-$suspended_clients = $client_stats['suspended'] ?? 0;
-
-// Get recent clients (last 5)
-$stmt = $conn->query("SELECT company_name, contact_person, email, status, created_at FROM clients ORDER BY created_at DESC LIMIT 5");
-$recent_clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Get total quotes
-$stmt = $conn->query("SELECT COUNT(*) as total FROM quotations");
-$total_quotes = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -69,16 +41,14 @@ $total_quotes = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Marlani Admin - Dashboard</title>
+    <title>Marlani Admin - View Client</title>
 
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
 
-    <!-- Page level plugins -->
-    <script src="vendor/chart.js/Chart.min.js"></script>
-
 <style>
+/* ===== ALL CSS FROM VIEW-QUOTE.PHP ===== */
 :root {
   --blue: #002a66;
   --indigo: #6610f2;
@@ -119,10 +89,6 @@ html {
   line-height: 1.15;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-}
-
-article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
-  display: block;
 }
 
 body {
@@ -449,7 +415,6 @@ small, .small {
   margin-top: 0.5rem;
 }
 
-/* Custom button hover effects */
 .btn-generate {
     color: #fff !important;
     background-color: #4e73df;
@@ -677,11 +642,6 @@ small, .small {
   color: #fff;
   background-color: #e74a3b;
 }
-
-.badge-active { background: #dcfce7; color: #16a34a; }
-.badge-pending { background: #fef3c7; color: #d97706; }
-.badge-inactive { background: #fee2e2; color: #dc2626; }
-.badge-suspended { background: #f3f4f6; color: #6b7280; }
 
 .progress {
   display: flex;
@@ -1504,6 +1464,59 @@ form.user .btn-user {
 .container-fluid {
     flex: 1 0 auto;
 }
+
+/* ===== CUSTOM STYLES FOR VIEW CLIENT PAGE ===== */
+.detail-row {
+    display: flex;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.detail-label {
+    font-weight: 600;
+    color: #5a5c69;
+    width: 150px;
+    flex-shrink: 0;
+}
+.detail-value {
+    color: #333;
+    flex: 1;
+}
+.detail-value .badge {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem;
+}
+.badge-active { background: #dcfce7; color: #16a34a; }
+.badge-inactive { background: #fee2e2; color: #dc2626; }
+.badge-pending { background: #fef3c7; color: #d97706; }
+.badge-suspended { background: #f3f4f6; color: #6b7280; }
+
+.btn-warning {
+    color: #fff;
+    background-color: #f6c23e;
+    border-color: #f6c23e;
+}
+.btn-warning:hover {
+    color: #fff;
+    background-color: #dda20a;
+    border-color: #d39a0a;
+}
+.btn-info {
+    color: #fff;
+    background-color: #36b9cc;
+    border-color: #36b9cc;
+}
+.btn-info:hover {
+    color: #fff;
+    background-color: #2c9faf;
+    border-color: #2a96a5;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
 </style>
 </head>
 <body id="page-top">
@@ -1663,258 +1676,154 @@ form.user .btn-user {
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">
-                            Welcome, <?php echo htmlspecialchars($first_name); ?>! 👋
+                            <i class="fas fa-user"></i> Client Details
                         </h1>
-                        <a class="btn btn-sm btn-generate shadow-sm" href="#">
-                            <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
-                        </a>
-                    </div>
-
-                    <!-- Content Row - Stats Cards -->
-                    <div class="row">
-                        <!-- Total Employees -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Employees</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $total_staff; ?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-users fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Total Clients -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-success shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Clients</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $total_clients; ?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-building fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Total Quotes -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-info shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Quotes</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $total_quotes; ?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- New This Week -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-warning shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">New This Week</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $new_count; ?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-user-plus fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div>
+                            <a href="clients.php" class="btn btn-sm btn-secondary shadow-sm">
+                                <i class="fas fa-arrow-left"></i> Back to Clients
+                            </a>
+                            <a href="client-edit.php?id=<?php echo $client_id; ?>" class="btn btn-sm btn-warning shadow-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="generate-quote.php?client_id=<?php echo $client_id; ?>" class="btn btn-sm btn-success shadow-sm">
+                                <i class="fas fa-file-invoice"></i> Create Quote
+                            </a>
                         </div>
                     </div>
 
-                    <!-- Client Status Chart Row -->
+                    <!-- Client Details -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card shadow mb-4">
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Client Status Overview</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
-                                        </div>
-                                    </div>
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Client Information</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        <!-- Client Status Cards -->
-                                        <div class="col-xl-3 col-md-6 mb-4">
-                                            <div class="card border-left-primary shadow h-100 py-2">
-                                                <div class="card-body">
-                                                    <div class="row no-gutters align-items-center">
-                                                        <div class="col mr-2">
-                                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Active Clients</div>
-                                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $active_clients; ?></div>
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <i class="fas fa-check-circle fa-2x text-gray-300" style="color:#4e73df;"></i>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-row">
+                                                <div class="detail-label">Client Code</div>
+                                                <div class="detail-value"><strong><?php echo htmlspecialchars($client['client_code']); ?></strong></div>
+                                            </div>
+                                            <div class="detail-row">
+                                                <div class="detail-label">Company Name</div>
+                                                <div class="detail-value"><strong><?php echo htmlspecialchars($client['company_name']); ?></strong></div>
+                                            </div>
+                                            <div class="detail-row">
+                                                <div class="detail-label">Contact Person</div>
+                                                <div class="detail-value"><?php echo htmlspecialchars($client['contact_person'] ?? 'N/A'); ?></div>
+                                            </div>
+                                            <div class="detail-row">
+                                                <div class="detail-label">Email</div>
+                                                <div class="detail-value"><a href="mailto:<?php echo htmlspecialchars($client['email']); ?>"><?php echo htmlspecialchars($client['email']); ?></a></div>
+                                            </div>
+                                            <div class="detail-row">
+                                                <div class="detail-label">Phone</div>
+                                                <div class="detail-value"><?php echo htmlspecialchars($client['phone'] ?? 'N/A'); ?></div>
                                             </div>
                                         </div>
-                                        <div class="col-xl-3 col-md-6 mb-4">
-                                            <div class="card border-left-warning shadow h-100 py-2">
-                                                <div class="card-body">
-                                                    <div class="row no-gutters align-items-center">
-                                                        <div class="col mr-2">
-                                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Clients</div>
-                                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $pending_clients; ?></div>
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <i class="fas fa-clock fa-2x text-gray-300" style="color:#f6c23e;"></i>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-row">
+                                                <div class="detail-label">Address</div>
+                                                <div class="detail-value"><?php echo htmlspecialchars($client['address'] ?? 'N/A'); ?></div>
+                                            </div>
+                                            <div class="detail-row">
+                                                <div class="detail-label">City</div>
+                                                <div class="detail-value"><?php echo htmlspecialchars($client['city'] ?? 'N/A'); ?></div>
+                                            </div>
+                                            <div class="detail-row">
+                                                <div class="detail-label">Province</div>
+                                                <div class="detail-value"><?php echo htmlspecialchars($client['province'] ?? 'N/A'); ?></div>
+                                            </div>
+                                            <div class="detail-row">
+                                                <div class="detail-label">Postal Code</div>
+                                                <div class="detail-value"><?php echo htmlspecialchars($client['postal_code'] ?? 'N/A'); ?></div>
+                                            </div>
+                                            <div class="detail-row">
+                                                <div class="detail-label">Country</div>
+                                                <div class="detail-value"><?php echo htmlspecialchars($client['country'] ?? 'South Africa'); ?></div>
                                             </div>
                                         </div>
-                                        <div class="col-xl-3 col-md-6 mb-4">
-                                            <div class="card border-left-danger shadow h-100 py-2">
-                                                <div class="card-body">
-                                                    <div class="row no-gutters align-items-center">
-                                                        <div class="col mr-2">
-                                                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Inactive Clients</div>
-                                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $inactive_clients; ?></div>
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <i class="fas fa-times-circle fa-2x text-gray-300" style="color:#e74a3b;"></i>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-xl-3 col-md-6 mb-4">
-                                            <div class="card border-left-secondary shadow h-100 py-2">
-                                                <div class="card-body">
-                                                    <div class="row no-gutters align-items-center">
-                                                        <div class="col mr-2">
-                                                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Suspended</div>
-                                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $suspended_clients; ?></div>
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <i class="fas fa-ban fa-2x text-gray-300" style="color:#858796;"></i>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Client Status Chart -->
-                                    <div class="chart-pie pt-4 pb-2" style="height: 300px; min-height: 300px; width: 100%;">
-                                        <canvas id="clientPieChart"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle" style="color: #4e73df;"></i> Active
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle" style="color: #f6c23e;"></i> Pending
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle" style="color: #e74a3b;"></i> Inactive
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle" style="color: #858796;"></i> Suspended
-                                        </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Recent Registrations & Recent Clients -->
+                    <!-- Additional Info -->
                     <div class="row">
-                        <!-- Recent Staff Registrations -->
-                        <div class="col-lg-6">
+                        <div class="col-md-6">
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Recent Staff Registrations</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Business Information</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered" width="100%" cellspacing="0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Name</th>
-                                                    <th>Email</th>
-                                                    <th>Registered</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php foreach ($recent_staff as $staff): ?>
-                                                <tr>
-                                                    <td><?php echo htmlspecialchars($staff['first_name'] . ' ' . $staff['last_name']); ?></td>
-                                                    <td><?php echo htmlspecialchars($staff['email']); ?></td>
-                                                    <td><?php echo date('Y-m-d H:i', strtotime($staff['created_at'])); ?></td>
-                                                </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
+                                    <div class="detail-row">
+                                        <div class="detail-label">Industry</div>
+                                        <div class="detail-value"><?php echo htmlspecialchars($client['industry'] ?? 'N/A'); ?></div>
+                                    </div>
+                                    <div class="detail-row">
+                                        <div class="detail-label">Client Type</div>
+                                        <div class="detail-value"><?php echo htmlspecialchars(ucfirst($client['client_type'] ?? 'N/A')); ?></div>
+                                    </div>
+                                    <div class="detail-row">
+                                        <div class="detail-label">Status</div>
+                                        <div class="detail-value">
+                                            <span class="badge badge-<?php echo $client['status']; ?>">
+                                                <?php echo ucfirst($client['status']); ?>
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Recent Clients -->
-                        <div class="col-lg-6">
+                        <div class="col-md-6">
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Recent Clients</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Summary</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered" width="100%" cellspacing="0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Company</th>
-                                                    <th>Contact</th>
-                                                    <th>Status</th>
-                                                    <th>Registered</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php foreach ($recent_clients as $client): ?>
-                                                <tr>
-                                                    <td><?php echo htmlspecialchars($client['company_name']); ?></td>
-                                                    <td><?php echo htmlspecialchars($client['contact_person'] ?? 'N/A'); ?></td>
-                                                    <td>
-                                                        <span class="badge badge-<?php echo $client['status']; ?>">
-                                                            <?php echo ucfirst($client['status']); ?>
-                                                        </span>
-                                                    </td>
-                                                    <td><?php echo date('Y-m-d H:i', strtotime($client['created_at'])); ?></td>
-                                                </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
+                                    <div class="detail-row">
+                                        <div class="detail-label">Total Quotes</div>
+                                        <div class="detail-value"><strong><?php echo $quote_count; ?></strong></div>
                                     </div>
+                                    <div class="detail-row">
+                                        <div class="detail-label">Created</div>
+                                        <div class="detail-value"><?php echo date('d/m/Y H:i', strtotime($client['created_at'])); ?></div>
+                                    </div>
+                                    <?php if ($client['updated_at']): ?>
+                                    <div class="detail-row">
+                                        <div class="detail-label">Last Updated</div>
+                                        <div class="detail-value"><?php echo date('d/m/Y H:i', strtotime($client['updated_at'])); ?></div>
+                                    </div>
+                                    <?php endif; ?>
+                                    <?php if ($client['notes']): ?>
+                                    <div class="detail-row">
+                                        <div class="detail-label">Notes</div>
+                                        <div class="detail-value"><?php echo nl2br(htmlspecialchars($client['notes'])); ?></div>
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="action-buttons">
+                                <a href="client-edit.php?id=<?php echo $client_id; ?>" class="btn btn-warning">
+                                    <i class="fas fa-edit"></i> Edit Client
+                                </a>
+                                <a href="generate-quote.php?client_id=<?php echo $client_id; ?>" class="btn btn-success">
+                                    <i class="fas fa-file-invoice"></i> Create Quote
+                                </a>
+                                <a href="client-quote.php?id=<?php echo $client_id; ?>" class="btn btn-info">
+                                    <i class="fas fa-list"></i> View Quotes
+                                </a>
+                                <a href="clients.php" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Clients
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -1938,25 +1847,6 @@ form.user .btn-user {
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
-
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="logout.php">Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
@@ -1992,40 +1882,6 @@ form.user .btn-user {
             });
         });
     });
-
-    // Client Status Pie Chart
-    var ctx = document.getElementById("clientPieChart");
-    if (ctx) {
-        var myPieChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ["Active", "Pending", "Inactive", "Suspended"],
-                datasets: [{
-                    data: [<?php echo $active_clients; ?>, <?php echo $pending_clients; ?>, <?php echo $inactive_clients; ?>, <?php echo $suspended_clients; ?>],
-                    backgroundColor: ['#4e73df', '#f6c23e', '#e74a3b', '#858796'],
-                    hoverBackgroundColor: ['#2e59d9', '#dda20a', '#c0392b', '#6b6d7d'],
-                    hoverBorderColor: "rgba(234, 236, 244, 1)",
-                }],
-            },
-            options: {
-                maintainAspectRatio: false,
-                tooltips: {
-                    backgroundColor: "rgb(255,255,255)",
-                    bodyFontColor: "#858796",
-                    borderColor: '#dddfeb',
-                    borderWidth: 1,
-                    xPadding: 15,
-                    yPadding: 15,
-                    displayColors: false,
-                    caretPadding: 10,
-                },
-                legend: {
-                    display: false
-                },
-                cutoutPercentage: 80,
-            },
-        });
-    }
     </script>
 </body>
 </html>
