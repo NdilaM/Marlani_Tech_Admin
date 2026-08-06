@@ -28,6 +28,38 @@ $recent_staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // Get new this week
 $stmt = $conn->query("SELECT COUNT(*) as new FROM staff WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
 $new_count = $stmt->fetch(PDO::FETCH_ASSOC)['new'];
+
+// ============================================
+// CLIENT STATISTICS
+// ============================================
+// Get total clients
+$stmt = $conn->query("SELECT COUNT(*) as total FROM clients");
+$total_clients = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Get client status breakdown
+$stmt = $conn->query("
+    SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive,
+        SUM(CASE WHEN status = 'suspended' THEN 1 ELSE 0 END) as suspended
+    FROM clients
+");
+$client_stats = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$active_clients = $client_stats['active'] ?? 0;
+$pending_clients = $client_stats['pending'] ?? 0;
+$inactive_clients = $client_stats['inactive'] ?? 0;
+$suspended_clients = $client_stats['suspended'] ?? 0;
+
+// Get recent clients (last 5)
+$stmt = $conn->query("SELECT company_name, contact_person, email, status, created_at FROM clients ORDER BY created_at DESC LIMIT 5");
+$recent_clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Get total quotes
+$stmt = $conn->query("SELECT COUNT(*) as total FROM quotations");
+$total_quotes = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -645,6 +677,11 @@ small, .small {
   color: #fff;
   background-color: #e74a3b;
 }
+
+.badge-active { background: #dcfce7; color: #16a34a; }
+.badge-pending { background: #fef3c7; color: #d97706; }
+.badge-inactive { background: #fee2e2; color: #dc2626; }
+.badge-suspended { background: #f3f4f6; color: #6b7280; }
 
 .progress {
   display: flex;
@@ -1593,7 +1630,7 @@ form.user .btn-user {
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-                                    <?php echo htmlspecialchars($first_name . ' ' . $last_name); ?>
+                                    <?php echo htmlspecialchars($first_name); ?>
                                 </span>
                                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
                             </a>
@@ -1635,16 +1672,14 @@ form.user .btn-user {
 
                     <!-- Content Row - Stats Cards -->
                     <div class="row">
-                        <!-- Total Employees Card -->
+                        <!-- Total Employees -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-primary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Employees</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                                <?php echo $total_staff; ?>
-                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $total_staff; ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-users fa-2x text-gray-300"></i>
@@ -1654,59 +1689,48 @@ form.user .btn-user {
                             </div>
                         </div>
 
-                        <!-- Earnings (Monthly) Card Example -->
+                        <!-- Total Clients -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-success shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Earnings (Monthly)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">R40,000</div>
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Clients</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $total_clients; ?></div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                            <i class="fas fa-building fa-2x text-gray-300"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Tasks Card Example -->
+                        <!-- Total Quotes -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-info shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tasks</div>
-                                            <div class="row no-gutters align-items-center">
-                                                <div class="col-auto">
-                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="progress progress-sm mr-2">
-                                                        <div class="progress-bar bg-info" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Quotes</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $total_quotes; ?></div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                            <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- New This Week Card -->
+                        <!-- New This Week -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-warning shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">New This Week</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                                <?php echo $new_count; ?>
-                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $new_count; ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-user-plus fa-2x text-gray-300"></i>
@@ -1717,12 +1741,120 @@ form.user .btn-user {
                         </div>
                     </div>
 
-                    <!-- Recent Registrations Table -->
+                    <!-- Client Status Chart Row -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card shadow mb-4">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Client Status Overview</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                                            <div class="dropdown-header">Dropdown Header:</div>
+                                            <a class="dropdown-item" href="#">Action</a>
+                                            <a class="dropdown-item" href="#">Another action</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Something else here</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <!-- Client Status Cards -->
+                                        <div class="col-xl-3 col-md-6 mb-4">
+                                            <div class="card border-left-primary shadow h-100 py-2">
+                                                <div class="card-body">
+                                                    <div class="row no-gutters align-items-center">
+                                                        <div class="col mr-2">
+                                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Active Clients</div>
+                                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $active_clients; ?></div>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <i class="fas fa-check-circle fa-2x text-gray-300" style="color:#4e73df;"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-md-6 mb-4">
+                                            <div class="card border-left-warning shadow h-100 py-2">
+                                                <div class="card-body">
+                                                    <div class="row no-gutters align-items-center">
+                                                        <div class="col mr-2">
+                                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Clients</div>
+                                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $pending_clients; ?></div>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <i class="fas fa-clock fa-2x text-gray-300" style="color:#f6c23e;"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-md-6 mb-4">
+                                            <div class="card border-left-danger shadow h-100 py-2">
+                                                <div class="card-body">
+                                                    <div class="row no-gutters align-items-center">
+                                                        <div class="col mr-2">
+                                                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Inactive Clients</div>
+                                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $inactive_clients; ?></div>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <i class="fas fa-times-circle fa-2x text-gray-300" style="color:#e74a3b;"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-md-6 mb-4">
+                                            <div class="card border-left-secondary shadow h-100 py-2">
+                                                <div class="card-body">
+                                                    <div class="row no-gutters align-items-center">
+                                                        <div class="col mr-2">
+                                                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Suspended</div>
+                                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $suspended_clients; ?></div>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <i class="fas fa-ban fa-2x text-gray-300" style="color:#858796;"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Client Status Chart -->
+                                    <div class="chart-pie pt-4 pb-2" style="height: 300px; min-height: 300px; width: 100%;">
+                                        <canvas id="clientPieChart"></canvas>
+                                    </div>
+                                    <div class="mt-4 text-center small">
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle" style="color: #4e73df;"></i> Active
+                                        </span>
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle" style="color: #f6c23e;"></i> Pending
+                                        </span>
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle" style="color: #e74a3b;"></i> Inactive
+                                        </span>
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle" style="color: #858796;"></i> Suspended
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Registrations & Recent Clients -->
+                    <div class="row">
+                        <!-- Recent Staff Registrations -->
+                        <div class="col-lg-6">
+                            <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Recent Registrations</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Recent Staff Registrations</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
@@ -1748,70 +1880,40 @@ form.user .btn-user {
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Content Row - Area Chart FULL WIDTH -->
-                    <div class="row">
-                        <div class="col-12">
+                        <!-- Recent Clients -->
+                        <div class="col-lg-6">
                             <div class="card shadow mb-4">
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
-                                        </div>
-                                    </div>
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Recent Clients</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="chart-area" style="height: 300px; min-height: 300px; width: 100%;">
-                                        <canvas id="myAreaChart"></canvas>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" width="100%" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Company</th>
+                                                    <th>Contact</th>
+                                                    <th>Status</th>
+                                                    <th>Registered</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($recent_clients as $client): ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($client['company_name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($client['contact_person'] ?? 'N/A'); ?></td>
+                                                    <td>
+                                                        <span class="badge badge-<?php echo $client['status']; ?>">
+                                                            <?php echo ucfirst($client['status']); ?>
+                                                        </span>
+                                                    </td>
+                                                    <td><?php echo date('Y-m-d H:i', strtotime($client['created_at'])); ?></td>
+                                                </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Content Row - Pie Chart FULL WIDTH -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Revenue Sources</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink2">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="chart-pie pt-4 pb-2" style="height: 300px; min-height: 300px; width: 100%;">
-                                        <canvas id="myPieChart"></canvas>
-                                    </div>
-                                  <div class="mt-4 text-center small">
-                                    <span class="mr-2">
-                                        <i class="fas fa-circle" style="color: #4e73df;"></i> Direct
-                                    </span>
-                                    <span class="mr-2">
-                                        <i class="fas fa-circle" style="color: #c81cbb;"></i> Social
-                                    </span>
-                                    <span class="mr-2">
-                                        <i class="fas fa-circle" style="color: #7d1efb;"></i> Referral
-                                    </span>
-                                </div>
                                 </div>
                             </div>
                         </div>
@@ -1890,14 +1992,40 @@ form.user .btn-user {
             });
         });
     });
-</script>
 
-<!-- Page level plugins -->
-<script src="vendor/chart.js/Chart.min.js"></script>
-
-<!-- Page level custom scripts -->
-<script src="js/demo/chart-area-demo.js"></script>
-<script src="js/demo/chart-pie-demo.js"></script>
-
+    // Client Status Pie Chart
+    var ctx = document.getElementById("clientPieChart");
+    if (ctx) {
+        var myPieChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ["Active", "Pending", "Inactive", "Suspended"],
+                datasets: [{
+                    data: [<?php echo $active_clients; ?>, <?php echo $pending_clients; ?>, <?php echo $inactive_clients; ?>, <?php echo $suspended_clients; ?>],
+                    backgroundColor: ['#4e73df', '#f6c23e', '#e74a3b', '#858796'],
+                    hoverBackgroundColor: ['#2e59d9', '#dda20a', '#c0392b', '#6b6d7d'],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                },
+                legend: {
+                    display: false
+                },
+                cutoutPercentage: 80,
+            },
+        });
+    }
+    </script>
 </body>
 </html>

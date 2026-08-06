@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\mandi\\OneDrive\\Documents\\Desktop\\Website\\Marlani_Tech_Admin\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\mandi\\OneDrive\\Documents\\Desktop\\Website\\Marlani_Tech_Admin\\PHP\\register.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:PHP\\register.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\mandi\\OneDrive\\Documents\\Desktop\\Website\\Marlani_Tech_Admin\\login.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:login.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
@@ -21,10 +25,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\mandi\\OneDrive\\Documents\\Desktop\\Website\\Marlani_Tech_Admin\\PHP\\db.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:PHP\\db.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\mandi\\OneDrive\\Documents\\Desktop\\Website\\Marlani_Tech_Admin\\PHP\\register.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:PHP\\register.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,7 +34,7 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -42,7 +42,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "login.php",
               "DocumentMoniker": "C:\\Users\\mandi\\OneDrive\\Documents\\Desktop\\Website\\Marlani_Tech_Admin\\PHP\\login.php",
               "RelativeDocumentMoniker": "PHP\\login.php",
@@ -50,12 +50,11 @@
               "RelativeToolTip": "PHP\\login.php",
               "ViewState": "AgIAAAwAAAAAAAAAAAAAADsAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002338|",
-              "WhenOpened": "2026-08-06T16:02:24.685Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T16:02:24.685Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "logout.php",
               "DocumentMoniker": "C:\\Users\\mandi\\OneDrive\\Documents\\Desktop\\Website\\Marlani_Tech_Admin\\PHP\\logout.php",
               "RelativeDocumentMoniker": "PHP\\logout.php",
@@ -63,12 +62,11 @@
               "RelativeToolTip": "PHP\\logout.php",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAACAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002338|",
-              "WhenOpened": "2026-08-06T16:00:38.891Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T16:00:38.891Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "login.html",
               "DocumentMoniker": "C:\\Users\\mandi\\OneDrive\\Documents\\Desktop\\Website\\Marlani_Tech_Admin\\login.html",
               "RelativeDocumentMoniker": "login.html",
@@ -81,20 +79,18 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 0,
               "Title": "register.php",
               "DocumentMoniker": "C:\\Users\\mandi\\OneDrive\\Documents\\Desktop\\Website\\Marlani_Tech_Admin\\PHP\\register.php",
               "RelativeDocumentMoniker": "PHP\\register.php",
               "ToolTip": "C:\\Users\\mandi\\OneDrive\\Documents\\Desktop\\Website\\Marlani_Tech_Admin\\PHP\\register.php",
               "RelativeToolTip": "PHP\\register.php",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAD4AAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002338|",
-              "WhenOpened": "2026-08-06T15:27:27.249Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T15:27:27.249Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "db.php",
               "DocumentMoniker": "C:\\Users\\mandi\\OneDrive\\Documents\\Desktop\\Website\\Marlani_Tech_Admin\\PHP\\db.php",
               "RelativeDocumentMoniker": "PHP\\db.php",
@@ -102,12 +98,11 @@
               "RelativeToolTip": "PHP\\db.php",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAACAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002338|",
-              "WhenOpened": "2026-08-06T15:26:09.658Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T15:26:09.658Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "register.html",
               "DocumentMoniker": "C:\\Users\\mandi\\OneDrive\\Documents\\Desktop\\Website\\Marlani_Tech_Admin\\register.html",
               "RelativeDocumentMoniker": "register.html",
@@ -115,8 +110,7 @@
               "RelativeToolTip": "register.html",
               "ViewState": "AgIAAKUBAAAAAAAAAAAcwLwBAAAHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-08-06T14:59:51.558Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T14:59:51.558Z"
             }
           ]
         },
