@@ -1,3 +1,34 @@
+<?php
+// index.php - Dashboard
+session_start();
+
+// Check if user is logged in
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header('Location: login.html');
+    exit();
+}
+
+// Include database connection
+require_once 'db.php';
+
+// Get user data from session
+$first_name = $_SESSION['first_name'] ?? 'User';
+$last_name = $_SESSION['last_name'] ?? '';
+$email = $_SESSION['email'] ?? '';
+$staff_id = $_SESSION['staff_id'] ?? '';
+
+// Get total employees count
+$stmt = $conn->query("SELECT COUNT(*) as total FROM staff");
+$total_staff = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Get recent registrations (last 5)
+$stmt = $conn->query("SELECT first_name, last_name, email, created_at FROM staff ORDER BY created_at DESC LIMIT 5");
+$recent_staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Get new this week
+$stmt = $conn->query("SELECT COUNT(*) as new FROM staff WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+$new_count = $stmt->fetch(PDO::FETCH_ASSOC)['new'];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -401,8 +432,6 @@ small, .small {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
-
-
 
 .fade {
   transition: opacity 0.15s linear;
@@ -1563,7 +1592,9 @@ form.user .btn-user {
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="userNameDisplay">User</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                                    <?php echo htmlspecialchars($first_name . ' ' . $last_name); ?>
+                                </span>
                                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
@@ -1580,7 +1611,7 @@ form.user .btn-user {
                                     Activity Log
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                <a class="dropdown-item" href="logout.php">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
@@ -1594,42 +1625,46 @@ form.user .btn-user {
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-                        <a class="btn btn-sm btn-generate shadow-sm">
+                        <h1 class="h3 mb-0 text-gray-800">
+                            Welcome, <?php echo htmlspecialchars($first_name); ?>! 👋
+                        </h1>
+                        <a class="btn btn-sm btn-generate shadow-sm" href="#">
                             <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
                         </a>
                     </div>
 
                     <!-- Content Row - Stats Cards -->
                     <div class="row">
-                        <!-- Earnings (Monthly) Card Example -->
+                        <!-- Total Employees Card -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-primary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Earnings (Monthly)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">R40,000</div>
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Employees</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                <?php echo $total_staff; ?>
+                                            </div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                            <i class="fas fa-users fa-2x text-gray-300"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Earnings (Annual) Card Example -->
+                        <!-- Earnings (Monthly) Card Example -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-success shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Earnings (Annual)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">R215,000</div>
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Earnings (Monthly)</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">R40,000</div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -1662,18 +1697,53 @@ form.user .btn-user {
                             </div>
                         </div>
 
-                        <!-- Pending Requests Card Example -->
+                        <!-- New This Week Card -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-warning shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Messages</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">New This Week</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                <?php echo $new_count; ?>
+                                            </div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                            <i class="fas fa-user-plus fa-2x text-gray-300"></i>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Registrations Table -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Recent Registrations</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" width="100%" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Email</th>
+                                                    <th>Registered</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($recent_staff as $staff): ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($staff['first_name'] . ' ' . $staff['last_name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($staff['email']); ?></td>
+                                                    <td><?php echo date('Y-m-d H:i', strtotime($staff['created_at'])); ?></td>
+                                                </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
@@ -1752,7 +1822,7 @@ form.user .btn-user {
                 <!-- Footer -->
                 <footer class="sticky-footer bg-blue">
                     <div class="copyright text-center">
-                        <span>Copyright &copy; Your Website 2026</span>
+                        <span>Copyright &copy; Marlani Technologies 2026</span>
                     </div>
                 </footer>
             </div>
@@ -1780,7 +1850,7 @@ form.user .btn-user {
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="#" id="logoutButton">Logout</a>
+                    <a class="btn btn-primary" href="logout.php">Logout</a>
                 </div>
             </div>
         </div>
@@ -1819,25 +1889,6 @@ form.user .btn-user {
                 $('.sidebar-overlay').remove();
             });
         });
-    });
-
-    // Check if user is logged in
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) {
-        alert('Please login first');
-        window.location.href = 'login.html';
-    } else {
-        const userNameDisplay = document.getElementById('userNameDisplay');
-        if (userNameDisplay) {
-            userNameDisplay.textContent = currentUser.firstName + ' ' + currentUser.lastName;
-        }
-    }
-
-    // Logout functionality
-    document.getElementById('logoutButton')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        localStorage.removeItem('currentUser');
-        window.location.href = 'login.html';
     });
 </script>
 
