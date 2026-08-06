@@ -337,35 +337,35 @@
         <p>Start your journey with us today</p>
       </div>
 
-      <form class="user" action="#" method="POST">
+      <form class="user" action="PHP/register.php" method="POST">
         <!-- name row -->
         <div class="form-row">
           <div class="form-group">
             <i class="fas fa-user input-icon"></i>
-            <input type="text" class="form-control" id="firstName" placeholder="First name" required />
+            <input type="text" class="form-control" name="first_name"  id="firstName" placeholder="First name" required />
           </div>
           <div class="form-group">
             <i class="fas fa-user input-icon"></i>
-            <input type="text" class="form-control" id="lastName" placeholder="Last name" required />
+            <input type="text" class="form-control" name="last_name" id="lastName" placeholder="Last name" required />
           </div>
         </div>
 
         <!-- email -->
         <div class="form-group">
           <i class="fas fa-envelope input-icon"></i>
-          <input type="email" class="form-control" id="emailInput" placeholder="Email address" required autocomplete="email" />
+          <input type="email" class="form-control" name="email" id="emailInput" placeholder="Email address" required autocomplete="email" />
         </div>
 
         <!-- password row -->
         <div class="form-row">
           <div class="form-group password-group">
             <i class="fas fa-lock input-icon"></i>
-            <input type="password" class="form-control" id="passwordInput" placeholder="Password" required autocomplete="new-password" />
+            <input type="password" class="form-control" name="password" id="passwordInput" placeholder="Password" required autocomplete="new-password" />
             <i class="fas fa-eye toggle-eye" id="togglePassword"></i>
           </div>
           <div class="form-group password-group">
             <i class="fas fa-check input-icon"></i>
-            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm password" required autocomplete="new-password" />
+            <input type="password" class="form-control" name="confirm_password" id="confirmPassword" placeholder="Confirm password" required autocomplete="new-password" />
             <i class="fas fa-eye toggle-eye" id="toggleConfirm"></i>
           </div>
         </div>
@@ -389,77 +389,6 @@
   </div>
 </div>
 
-<script>
-  (function() {
-    const form = document.querySelector('.user');
-    if (form) {
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const firstName = document.getElementById('firstName')?.value.trim() || '';
-        const lastName = document.getElementById('lastName')?.value.trim() || '';
-        const email = document.getElementById('emailInput')?.value.trim() || '';
-        const password = document.getElementById('passwordInput')?.value.trim() || '';
-        const confirm = document.getElementById('confirmPassword')?.value.trim() || '';
-
-        // Validation
-        if (firstName === '' || lastName === '' || email === '' || password === '' || confirm === '') {
-          alert('⚠️ Please fill in all fields.');
-          return;
-        }
-        
-        if (password !== confirm) {
-          alert('⚠️ Passwords do not match.');
-          return;
-        }
-        
-        if (password.length < 6) {
-          alert('⚠️ Password must be at least 6 characters.');
-          return;
-        }
-
-        // Check if user already exists
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        if (users.some(u => u.email === email)) {
-          alert('❌ An account with this email already exists.');
-          return;
-        }
-
-        // Save new user
-        const newUser = {
-          id: Date.now(),
-          firstName,
-          lastName,
-          email,
-          password,
-          createdAt: new Date().toISOString()
-        };
-        
-        users.push(newUser);
-        localStorage.setItem('users', JSON.stringify(users));
-        
-        alert('✅ Registration successful! You can now login.');
-        window.location.href = 'login.html'; // Redirect to login page
-      });
-    }
-
-    // Toggle password visibility for both fields
-    function setupToggle(buttonId, fieldId) {
-      const toggleBtn = document.getElementById(buttonId);
-      const passwordField = document.getElementById(fieldId);
-      if (toggleBtn && passwordField) {
-        toggleBtn.addEventListener('click', function() {
-          const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
-          passwordField.setAttribute('type', type);
-          this.classList.toggle('fa-eye');
-          this.classList.toggle('fa-eye-slash');
-        });
-      }
-    }
-
-    setupToggle('togglePassword', 'passwordInput');
-    setupToggle('toggleConfirm', 'confirmPassword');
-  })();
-</script>
 </body>
+
 </html>
