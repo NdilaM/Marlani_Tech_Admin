@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Register · Modern</title>
+  <title>Staff Register · Marlani</title>
   <!-- Font Awesome (free) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <!-- Google Font (Nunito) -->
@@ -18,7 +18,7 @@
 
     body {
       font-family: 'Nunito', sans-serif;
-      background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -46,20 +46,36 @@
       transform: scale(1.01);
     }
 
-    /* left image panel */
+    /* left image panel — staff themed */
     .register-image {
       flex: 1 1 45%;
-      background: url('img/company_login.png') center/cover no-repeat;
+      background: url('https://images.unsplash.com/photo-1521791136064-7986c0212926?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80') center/cover no-repeat;
       min-height: 320px;
       position: relative;
     }
 
-    /* subtle overlay */
+    /* subtle overlay with badge */
     .register-image::after {
+      content: 'STAFF PORTAL';
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      background: rgba(30, 60, 114, 0.8);
+      backdrop-filter: blur(4px);
+      padding: 0.6rem 1.8rem;
+      border-radius: 40px;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.9rem;
+      letter-spacing: 1.5px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .register-image::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: rgba(78, 115, 223, 0.08);
+      background: rgba(30, 60, 114, 0.1);
       backdrop-filter: blur(0.5px);
     }
 
@@ -76,31 +92,32 @@
     /* ----- typography & spacing ----- */
     .text-center {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.8rem;
     }
 
     .brand-icon {
       display: inline-block;
-      background: #4e73df10;
-      padding: 0.3rem 1rem;
+      background: #1e3c7210;
+      padding: 0.3rem 1.2rem;
       border-radius: 40px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #4e73df;
-      letter-spacing: 0.3px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #1e3c72;
+      letter-spacing: 1px;
+      text-transform: uppercase;
       margin-bottom: 0.5rem;
     }
 
     .text-center h1 {
       font-weight: 800;
       font-size: 2rem;
-      color: #2d3748;
+      color: #1e293b;
       letter-spacing: -0.5px;
       margin-bottom: 0.2rem;
     }
 
     .text-center p {
-      color: #718096;
+      color: #64748b;
       font-size: 0.95rem;
       font-weight: 400;
     }
@@ -127,7 +144,7 @@
       left: 1.2rem;
       top: 50%;
       transform: translateY(-50%);
-      color: #a0aec0;
+      color: #94a3b8;
       font-size: 1rem;
       transition: color 0.2s;
       pointer-events: none;
@@ -140,39 +157,44 @@
       border-radius: 40px;
       font-size: 0.95rem;
       font-family: 'Nunito', sans-serif;
-      background: #f7fafc;
+      background: #f8fafc;
       transition: all 0.25s ease;
-      color: #2d3748;
+      color: #1e293b;
       font-weight: 500;
     }
 
     .form-group input:focus {
       outline: none;
-      border-color: #4e73df;
+      border-color: #1e3c72;
       background: #ffffff;
-      box-shadow: 0 0 0 4px rgba(78, 115, 223, 0.15);
+      box-shadow: 0 0 0 4px rgba(30, 60, 114, 0.12);
     }
 
     .form-group input::placeholder {
-      color: #a0aec0;
+      color: #94a3b8;
       font-weight: 400;
       font-size: 0.9rem;
     }
 
-    /* password eye (JS toggles) */
+    /* staff code special styling */
+    .form-group.staff-code input {
+      background: #f0f4ff;
+      border-color: #b9c8f0;
+      padding-left: 3rem;
+    }
+    .form-group.staff-code .input-icon {
+      color: #1e3c72;
+    }
+
+    /* password eye (icons only, no script) */
     .toggle-eye {
       position: absolute;
       right: 1.2rem;
       top: 50%;
       transform: translateY(-50%);
-      color: #a0aec0;
-      cursor: pointer;
-      z-index: 2;
-      transition: color 0.2s;
+      color: #94a3b8;
+      pointer-events: none;  /* no interaction, just visual */
       font-size: 1rem;
-    }
-    .toggle-eye:hover {
-      color: #4e73df;
     }
 
     /* ----- buttons ----- */
@@ -193,14 +215,14 @@
     }
 
     .btn-primary {
-      background: #4e73df;
+      background: #1e3c72;
       color: #fff;
-      box-shadow: 0 8px 18px -6px rgba(78, 115, 223, 0.4);
+      box-shadow: 0 8px 18px -6px rgba(30, 60, 114, 0.4);
     }
     .btn-primary:hover {
-      background: #2e59d9;
+      background: #0f2a4f;
       transform: translateY(-2px);
-      box-shadow: 0 12px 24px -8px rgba(78, 115, 223, 0.5);
+      box-shadow: 0 12px 24px -8px rgba(30, 60, 114, 0.5);
     }
 
     .btn-google {
@@ -256,10 +278,10 @@
       background: #e2e8f0;
     }
     .divider-text {
-      color: #a0aec0;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.8px;
       text-transform: uppercase;
     }
 
@@ -271,15 +293,31 @@
       margin-top: 0.5rem;
     }
     .action-links a {
-      color: #4e73df;
+      color: #1e3c72;
       text-decoration: none;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 0.9rem;
       transition: color 0.2s;
     }
     .action-links a:hover {
-      color: #224abe;
+      color: #0f2a4f;
       text-decoration: underline;
+    }
+
+    /* staff code hint */
+    .staff-hint {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: -0.8rem;
+      margin-bottom: 1.2rem;
+      padding-left: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .staff-hint i {
+      color: #1e3c72;
+      font-size: 0.8rem;
     }
 
     /* ----- footer note ----- */
@@ -287,7 +325,7 @@
       text-align: center;
       margin-top: 1.8rem;
       font-size: 0.75rem;
-      color: #a0aec0;
+      color: #94a3b8;
       letter-spacing: 0.3px;
     }
 
@@ -298,7 +336,13 @@
       }
       .register-image {
         flex: 1 1 100%;
-        min-height: 200px;
+        min-height: 180px;
+      }
+      .register-image::after {
+        bottom: 16px;
+        left: 16px;
+        padding: 0.4rem 1.4rem;
+        font-size: 0.75rem;
       }
       .register-form {
         padding: 2rem 1.8rem;
@@ -327,14 +371,15 @@
 <body>
 <div class="container">
   <div class="card">
-    <!-- LEFT: image -->
-    <div class="register-image" aria-label="Register visual"></div>
+    <!-- LEFT: staff image -->
+    <div class="register-image" aria-label="Staff registration visual"></div>
 
-    <!-- RIGHT: registration form -->
+    <!-- RIGHT: staff registration form -->
     <div class="register-form">
       <div class="text-center">
-        <h1>Create Account</h1>
-        <p>Start your journey with us today</p>
+        <span class="brand-icon"><i class="fas fa-id-badge" style="margin-right: 6px;"></i> Staff registration</span>
+        <h1>Staff Access</h1>
+        <p>Enter your staff code to verify</p>
       </div>
 
       <form class="user" action="PHP/register.php" method="POST">
@@ -342,7 +387,7 @@
         <div class="form-row">
           <div class="form-group">
             <i class="fas fa-user input-icon"></i>
-            <input type="text" class="form-control" name="first_name"  id="firstName" placeholder="First name" required />
+            <input type="text" class="form-control" name="first_name" id="firstName" placeholder="First name" required />
           </div>
           <div class="form-group">
             <i class="fas fa-user input-icon"></i>
@@ -353,7 +398,16 @@
         <!-- email -->
         <div class="form-group">
           <i class="fas fa-envelope input-icon"></i>
-          <input type="email" class="form-control" name="email" id="emailInput" placeholder="Email address" required autocomplete="email" />
+          <input type="email" class="form-control" name="email" id="emailInput" placeholder="Company email" required autocomplete="email" />
+        </div>
+
+        <!-- STAFF CODE - validation field (new) -->
+        <div class="form-group staff-code">
+          <i class="fas fa-shield-alt input-icon"></i>
+          <input type="text" class="form-control" name="staff_code" id="staffCode" placeholder="Staff code (e.g. STAFF-2026)" required />
+        </div>
+        <div class="staff-hint">
+          <i class="fas fa-info-circle"></i> Enter your valid staff code to proceed
         </div>
 
         <!-- password row -->
@@ -361,20 +415,19 @@
           <div class="form-group password-group">
             <i class="fas fa-lock input-icon"></i>
             <input type="password" class="form-control" name="password" id="passwordInput" placeholder="Password" required autocomplete="new-password" />
-            <i class="fas fa-eye toggle-eye" id="togglePassword"></i>
+            <i class="fas fa-eye toggle-eye"></i>
           </div>
           <div class="form-group password-group">
             <i class="fas fa-check input-icon"></i>
             <input type="password" class="form-control" name="confirm_password" id="confirmPassword" placeholder="Confirm password" required autocomplete="new-password" />
-            <i class="fas fa-eye toggle-eye" id="toggleConfirm"></i>
+            <i class="fas fa-eye toggle-eye"></i>
           </div>
         </div>
 
         <!-- register button -->
         <button type="submit" class="btn btn-primary">
-          <i class="fas fa-user-plus" style="margin-right: 8px;"></i> Create Account
+          <i class="fas fa-user-plus" style="margin-right: 8px;"></i> Register as Staff
         </button>
-
       </form>
 
       <!-- action links -->
@@ -388,7 +441,5 @@
     </div>
   </div>
 </div>
-
 </body>
-
 </html>
