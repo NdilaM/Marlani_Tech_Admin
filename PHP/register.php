@@ -1,45 +1,70 @@
 <?php
+// PHP/register.php
 
-include 'db.php';
+// SQL Server connection
+$server = 'Ndila-L';  // server name
+$database = 'marlani_staff';
+$username = 'root';
+$password = '';
 
-$first = $_POST['first_name'];
-$last = $_POST['last_name'];
-$email = $_POST['email'];
-$password = $_POST['password'];
-$confirm = $_POST['confirm_password'];
-
-if($password != $confirm){
-    die("Passwords do not match");
+try {
+    $conn = new PDO("sqlsrv:Server=$server;Database=$database", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch(PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
 }
 
-// Check if email exists
-$stmt = $conn->prepare("SELECT id FROM users WHERE email=?");
-$stmt->bind_param("s",$email);
-$stmt->execute();
-$stmt->store_result();
-
-if($stmt->num_rows > 0){
-    die("Email already exists");
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $first_name = $_POST['first_name'];
+    $last_name = $_POST['last_name'];
+    $email = $_POST['email'];
+    $staff_code = $_POST['staff_code'];
+    $password = $_POST['password'];
+    $confirm = $_POST['confirm_password'];
+    
+    $errors = [];
+    
+    // Validate staff code (check if it exists in staff_codes)
+    $stmt = $conn->prepare("SELECT * FROM staff_codes WHERE code = ?");
+    $stmt->execute([$staff_code]);
+    if ($stmt->rowCount() == 0) {
+        $errors[] = "Invalid staff code";
+    }
+    
+    // Check if email exists
+    $stmt = $conn->prepare("SELECT * FROM staff WHERE email = ?");
+    $stmt->execute([$email]);
+    if ($stmt->rowCount() > 0) {
+        $errors[] = "Email already registered";
+    }
+    
+    // Check passwords match
+    if ($password !== $confirm) {
+        $errors[] = "Passwords don't match";
+    }
+    
+    // If no errors, register
+    if (empty($errors)) {
+        $hashed = password_hash($password, PASSWORD_DEFAULT);
+        
+        $stmt = $conn->prepare("INSERT INTO staff (staff_code, first_name, last_name, email, password) 
+                                VALUES (?, ?, ?, ?, ?)");
+        
+        if ($stmt->execute([$staff_code, $first_name, $last_name, $email, $hashed])) {
+            header('Location: login.html?success=1');
+            exit();
+        } else {
+            $errors[] = "Registration failed";
+        }
+    }
+    
+    // If errors, go back
+    if (!empty($errors)) {
+        session_start();
+        $_SESSION['errors'] = $errors;
+        header('Location: staff-register.html');
+        exit();
+    }
 }
-
-$stmt->close();
-
-// Hash password
-$hash = password_hash($password, PASSWORD_DEFAULT);
-
-// Insert user
-$stmt = $conn->prepare("INSERT INTO users(first_name,last_name,email,password)
-VALUES(?,?,?,?)");
-
-$stmt->bind_param("ssss",$first,$last,$email,$hash);
-
-if($stmt->execute()){
-    header("Location: login.html");
-}else{
-    echo "Registration failed";
-}
-
-$stmt->close();
-$conn->close();
-
 ?>
