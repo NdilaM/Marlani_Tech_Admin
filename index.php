@@ -1526,11 +1526,10 @@ form.user .btn-user {
                     <!-- Topbar Search -->
                     <form class="form-inline mr-auto ml-3 navbar-search">
                         <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
+                             <div class="input-group-append">
+                               <h1 class="h3 mb-0 text-gray-800">
+                            Welcome, <?php echo htmlspecialchars($first_name); ?>!
+                        </h1>
                             </div>
                         </div>
                     </form>
@@ -1658,18 +1657,6 @@ form.user .btn-user {
                 </nav>
                 <!-- End of Topbar -->
 
-                <!-- Begin Page Content -->
-                <div class="container-fluid">
-                    <!-- Page Heading -->
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">
-                            Welcome, <?php echo htmlspecialchars($first_name); ?>! 👋
-                        </h1>
-                        <a class="btn btn-sm btn-generate shadow-sm" href="#">
-                            <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
-                        </a>
-                    </div>
-
                     <!-- Content Row - Stats Cards -->
                     <div class="row">
                         <!-- Total Employees -->
@@ -1749,8 +1736,7 @@ form.user .btn-user {
                                     <h6 class="m-0 font-weight-bold text-primary">Client Status Overview</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
+                                         </a>
                                         <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
                                             <div class="dropdown-header">Dropdown Header:</div>
                                             <a class="dropdown-item" href="#">Action</a>

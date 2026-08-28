@@ -11,24 +11,24 @@
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:generate-quote.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\xampp\\htdocs\\Marlani_Tech_Admin\\clients.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:clients.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\xampp\\htdocs\\Marlani_Tech_Admin\\sidebar.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:sidebar.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\xampp\\htdocs\\Marlani_Tech_Admin\\client-add.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:client-add.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\xampp\\htdocs\\Marlani_Tech_Admin\\client-view.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:client-view.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\xampp\\htdocs\\Marlani_Tech_Admin\\client-quote.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:client-quote.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\xampp\\htdocs\\Marlani_Tech_Admin\\sidebar.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:sidebar.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\xampp\\htdocs\\Marlani_Tech_Admin\\login.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:login.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\xampp\\htdocs\\Marlani_Tech_Admin\\404.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:404.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\xampp\\htdocs\\Marlani_Tech_Admin\\login.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -42,12 +42,8 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{e1b7d1f8-9b3c-49b1-8f4f-bfc63a88835d}"
-            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -56,22 +52,9 @@
               "RelativeDocumentMoniker": "view-quote.php",
               "ToolTip": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\view-quote.php",
               "RelativeToolTip": "view-quote.php",
-              "ViewState": "AgIAAHMBAAAAAAAAAAAAwJkBAAAHAAAAAAAAAA==",
+              "ViewState": "AgIAAMICAAAAAAAAAAAAwOgCAAAHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002338|",
-              "WhenOpened": "2026-08-06T20:07:05.421Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "clients.php",
-              "DocumentMoniker": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\clients.php",
-              "RelativeDocumentMoniker": "clients.php",
-              "ToolTip": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\clients.php",
-              "RelativeToolTip": "clients.php",
-              "ViewState": "AgIAAC0AAAAAAAAAAAAAAEwAAAApAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002338|",
-              "WhenOpened": "2026-08-06T19:41:51.137Z",
+              "WhenOpened": "2026-08-07T17:09:28.682Z",
               "EditorCaption": ""
             },
             {
@@ -82,10 +65,21 @@
               "RelativeDocumentMoniker": "generate-quote.php",
               "ToolTip": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\generate-quote.php",
               "RelativeToolTip": "generate-quote.php",
-              "ViewState": "AgIAANQBAAAAAAAAAAAAwPoBAAAHAAAAAAAAAA==",
+              "ViewState": "AgIAABMHAAAAAAAAAAAYwB4HAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002338|",
-              "WhenOpened": "2026-08-06T20:06:29.29Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-07T17:01:50.046Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "client-view.php",
+              "DocumentMoniker": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\client-view.php",
+              "RelativeDocumentMoniker": "client-view.php",
+              "ToolTip": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\client-view.php",
+              "RelativeToolTip": "client-view.php",
+              "ViewState": "AgIAAHYFAAAAAAAAAAAhwIoFAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002338|",
+              "WhenOpened": "2026-08-06T21:53:13.662Z"
             },
             {
               "$type": "Document",
@@ -95,49 +89,45 @@
               "RelativeDocumentMoniker": "client-add.php",
               "ToolTip": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\client-add.php",
               "RelativeToolTip": "client-add.php",
-              "ViewState": "AgIAAD0CAAAAAAAAAAAUwG8CAAAHAAAAAAAAAA==",
+              "ViewState": "AgIAAKkFAAAAAAAAAAAhwL0FAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002338|",
-              "WhenOpened": "2026-08-06T19:46:34.32Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T19:46:34.32Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "client-quote.php",
-              "DocumentMoniker": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\client-quote.php",
-              "RelativeDocumentMoniker": "client-quote.php",
-              "ToolTip": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\client-quote.php",
-              "RelativeToolTip": "client-quote.php",
-              "ViewState": "AgIAAOUAAAAAAAAAAAAUwCEBAAAHAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002338|",
-              "WhenOpened": "2026-08-06T19:43:51.364Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 2,
               "Title": "sidebar.html",
               "DocumentMoniker": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\sidebar.html",
               "RelativeDocumentMoniker": "sidebar.html",
               "ToolTip": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\sidebar.html",
               "RelativeToolTip": "sidebar.html",
-              "ViewState": "AgIAABwDAAAAAAAAAAAIwDoDAAApAAAAAAAAAA==",
+              "ViewState": "AgIAAN4AAAAAAAAAAAAhwOcAAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-08-06T19:28:31.543Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T19:28:31.543Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "client-quote.php",
+              "DocumentMoniker": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\client-quote.php",
+              "RelativeDocumentMoniker": "client-quote.php",
+              "ToolTip": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\client-quote.php",
+              "RelativeToolTip": "client-quote.php",
+              "ViewState": "AgIAANQAAAAAAAAAAAAUwBABAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002338|",
+              "WhenOpened": "2026-08-06T19:43:51.364Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 6,
-              "Title": "login.php",
-              "DocumentMoniker": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\login.php",
-              "RelativeDocumentMoniker": "login.php",
-              "ToolTip": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\login.php",
-              "RelativeToolTip": "login.php",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADUAAAACAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002338|",
-              "WhenOpened": "2026-08-06T19:25:41.295Z",
-              "EditorCaption": ""
+              "Title": "404.html",
+              "DocumentMoniker": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\404.html",
+              "RelativeDocumentMoniker": "404.html",
+              "ToolTip": "C:\\xampp\\htdocs\\Marlani_Tech_Admin\\404.html",
+              "RelativeToolTip": "404.html",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-08-06T20:40:07.397Z"
             },
             {
               "$type": "Document",
@@ -149,8 +139,7 @@
               "RelativeToolTip": "login.html",
               "ViewState": "AgIAAEsBAAAAAAAAAAAAAIgBAAAHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-08-06T19:24:49.257Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T19:24:49.257Z"
             }
           ]
         },

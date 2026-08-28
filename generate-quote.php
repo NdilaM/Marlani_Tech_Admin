@@ -1,5 +1,5 @@
 <?php
-// generate-quote.php - Generate New Quote with Service Selection
+// generate-quote.php - Generate New Quote with Services from Database
 session_start();
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
@@ -26,27 +26,28 @@ if (!$client) {
     exit();
 }
 
-// All available services
-$services = [
-    ['id' => 1, 'name' => 'Website Development - Basic', 'description' => '5-page responsive website with CMS', 'price' => 15000.00],
-    ['id' => 2, 'name' => 'Website Development - Premium', 'description' => '10-page responsive website with CMS & E-commerce', 'price' => 25000.00],
-    ['id' => 3, 'name' => 'Custom Web Application', 'description' => 'Custom PHP/MySQL web application', 'price' => 35000.00],
-    ['id' => 4, 'name' => 'Hosting - Starter', 'description' => '1 year basic hosting with SSL', 'price' => 4500.00],
-    ['id' => 5, 'name' => 'Hosting - Premium', 'description' => '1 year premium hosting with SSL & CDN', 'price' => 8500.00],
-    ['id' => 6, 'name' => 'Domain Registration', 'description' => '.co.za domain for 1 year', 'price' => 150.00],
-    ['id' => 7, 'name' => 'Email Hosting', 'description' => '5 business email accounts - 1 year', 'price' => 1800.00],
-    ['id' => 8, 'name' => 'Maintenance & Support', 'description' => 'Monthly maintenance and support - 12 months', 'price' => 18000.00],
-    ['id' => 9, 'name' => 'SEO Optimization', 'description' => 'Full SEO optimization package', 'price' => 12000.00],
-    ['id' => 10, 'name' => 'Social Media Management', 'description' => 'Social media management - 3 months', 'price' => 15000.00],
-    ['id' => 11, 'name' => 'Graphic Design', 'description' => 'Logo, branding, and marketing materials', 'price' => 8000.00],
-    ['id' => 12, 'name' => 'Mobile App Development', 'description' => 'iOS/Android mobile application', 'price' => 45000.00]
-];
+// ============================================
+// GET SERVICES FROM DATABASE
+// ============================================
+$stmt = $conn->query("SELECT * FROM services WHERE is_active = 1 ORDER BY category, service_name");
+$services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Group services by category
+$categories = [];
+foreach ($services as $service) {
+    $cat = $service['category'] ?? 'Uncategorized';
+    if (!isset($categories[$cat])) {
+        $categories[$cat] = [];
+    }
+    $categories[$cat][] = $service;
+}
 
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $selected_services = isset($_POST['services']) ? $_POST['services'] : [];
     $quantities = isset($_POST['quantities']) ? $_POST['quantities'] : [];
+    $subscription_months = isset($_POST['subscription_months']) ? $_POST['subscription_months'] : [];
     
     if (empty($selected_services)) {
         $errors[] = "Please select at least one service.";
@@ -58,11 +59,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($services as $service) {
                 if ($service['id'] == $service_id) {
                     $qty = isset($quantities[$service_id]) && $quantities[$service_id] > 0 ? (int)$quantities[$service_id] : 1;
+                    
+                    // Check if this is a subscription service
+                    $is_subscription = $service['monthly_subscription'] > 0;
+                    $months = 0;
+                    $unit_price = $service['price'];
+                    
+                    if ($is_subscription) {
+                        $months = isset($subscription_months[$service_id]) && $subscription_months[$service_id] > 0 ? (int)$subscription_months[$service_id] : 12;
+                        // For subscription, unit price is the monthly fee * months
+                        $unit_price = $service['monthly_subscription'] * $months;
+                    }
+                    
                     $items[] = [
-                        'item_name' => $service['name'],
+                        'item_name' => $service['service_name'],
                         'description' => $service['description'],
                         'quantity' => $qty,
-                        'unit_price' => $service['price']
+                        'unit_price' => $unit_price,
+                        'is_subscription' => $is_subscription,
+                        'monthly_fee' => $service['monthly_subscription'],
+                        'months' => $months,
+                        'original_price' => $service['price']
                     ];
                     break;
                 }
@@ -110,12 +127,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             foreach ($items as $item) {
                 $total = $item['quantity'] * $item['unit_price'];
+                $description = $item['description'];
+                if ($item['is_subscription']) {
+                    $description .= " (R" . number_format($item['monthly_fee'], 2) . " x " . $item['months'] . " months)";
+                }
                 $stmt = $conn->prepare("
                     INSERT INTO quotation_items (quotation_id, item_name, description, quantity, unit_price, total)
                     VALUES (?, ?, ?, ?, ?, ?)
                 ");
                 $stmt->execute([
-                    $quote_id, $item['item_name'], $item['description'], 
+                    $quote_id, $item['item_name'], $description, 
                     $item['quantity'], $item['unit_price'], $total
                 ]);
             }
@@ -145,12 +166,7 @@ $first_name = $_SESSION['first_name'] ?? 'User';
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
 
-    <!-- Page level plugins -->
-    <script src="vendor/chart.js/Chart.min.js"></script>
-
 <style>
-/* ===== COPY ALL YOUR INDEX.PHP CSS HERE ===== */
-/* I'll include the full styles from your index.php */
 :root {
   --blue: #002a66;
   --indigo: #6610f2;
@@ -191,10 +207,6 @@ html {
   line-height: 1.15;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-}
-
-article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
-  display: block;
 }
 
 body {
@@ -895,113 +907,84 @@ a:focus {
   padding-right: 1.5rem;
 }
 
-/* Fix wrapper layout */
 #wrapper {
-    display: flex;
-    min-height: 100vh;
+  display: flex;
+  min-height: 100vh;
 }
-
 #content-wrapper {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100vh;
 }
-
 #content {
-    flex: 1 0 auto;
+  flex: 1 0 auto;
 }
 
-/* Sidebar positioning */
 .sidebar {
-    width: 6.5rem;
-    min-height: 100vh;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-    flex-shrink: 0;
-    z-index: 100;
-    overflow-y: auto;
-    overflow-x: hidden;
-    transition: width 0.3s ease;
-    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
-    display: flex;
-    flex-direction: column;
+  width: 6.5rem;
+  min-height: 100vh;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
+  z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.3s ease;
+  box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
 }
-
 #sidebar-container {
-    display: flex;
-    flex-shrink: 0;
-}
-
-.chart-area{
-    position:relative;
-    height:20rem;
-    width:100%;
-}
-
-.chart-pie{
-    position:relative;
-    height:15rem;
-    width:100%;
-}
-
-.chart-bar{
-    position:relative;
-    height:20rem;
-    width:100%;
+  display: flex;
+  flex-shrink: 0;
 }
 
 .topbar {
-    height: 4.375rem;
-    position: relative;
-    z-index: 10;
+  height: 4.375rem;
+  position: relative;
+  z-index: 10;
 }
-
 #content {
-    position: relative;
-    z-index: 1;
+  position: relative;
+  z-index: 1;
 }
 
-/* Desktop sidebar width */
 @media (min-width: 768px) {
-    .sidebar {
-        width: 14rem !important;
-    }
+  .sidebar {
+    width: 14rem !important;
+  }
 }
 
-/* Mobile sidebar - overlay */
 @media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        z-index: 1050;
-        width: 0 !important;
-        overflow: hidden;
-    }
-    
-    .sidebar.toggled {
-        width: 14rem !important;
-        overflow: visible;
-        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
-    }
-    
-    .sidebar-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1040;
-        display: none;
-    }
-    
-    .sidebar-overlay.active {
-        display: block;
-    }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1050;
+    width: 0 !important;
+    overflow: hidden;
+  }
+  .sidebar.toggled {
+    width: 14rem !important;
+    overflow: visible;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+  }
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    display: none;
+  }
+  .sidebar-overlay.active {
+    display: block;
+  }
 }
 
 .scroll-to-top {
@@ -1018,12 +1001,10 @@ a:focus {
   border-radius: 50%;
   z-index: 999;
 }
-
 .scroll-to-top:hover {
   color: white;
   background: #5a5c69;
 }
-
 .scroll-to-top i {
   font-weight: 800;
 }
@@ -1032,7 +1013,6 @@ a:focus {
   0% { transform: scale(0.9); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
-
 .animated--grow-in {
   animation-name: growIn;
   animation-duration: 200ms;
@@ -1043,7 +1023,6 @@ a:focus {
   0% { opacity: 0; }
   100% { opacity: 1; }
 }
-
 .animated--fade-in {
   animation-name: fadeIn;
   animation-duration: 200ms;
@@ -1161,57 +1140,48 @@ a:focus {
 .topbar {
   height: 4.375rem;
 }
-
 .topbar .navbar-search {
-    width: 25rem;
+  width: 25rem;
 }
-
 .topbar .navbar-search .input-group {
-    position: relative;
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    width: 100%;
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: 100%;
 }
-
 .topbar .navbar-search .form-control {
-    font-size: 0.85rem;
-    height: auto;
-    padding-right: 3rem;
-    border-radius: 10rem 0 0 10rem;
-    border: 1px solid #d1d3e2;
-    background-color: #f8f9fc;
+  font-size: 0.85rem;
+  height: auto;
+  padding-right: 3rem;
+  border-radius: 10rem 0 0 10rem;
+  border: 1px solid #d1d3e2;
+  background-color: #f8f9fc;
 }
-
 .topbar .navbar-search .input-group-append {
-    margin-left: -1px;
+  margin-left: -1px;
 }
-
 .topbar .navbar-search .input-group-append .btn {
-    border-radius: 0 10rem 10rem 0;
-    padding: 0.375rem 0.75rem;
-    background-color: #4e73df;
-    color: #fff;
-    border: 1px solid #4e73df;
+  border-radius: 0 10rem 10rem 0;
+  padding: 0.375rem 0.75rem;
+  background-color: #4e73df;
+  color: #fff;
+  border: 1px solid #4e73df;
 }
-
 .topbar .navbar-search .input-group-append .btn:hover {
-    background-color: #2e59d9;
-    border-color: #2653d4;
+  background-color: #2e59d9;
+  border-color: #2653d4;
 }
-
 .topbar .navbar-search input {
   font-size: 0.85rem;
   height: auto;
 }
-
 .topbar .topbar-divider {
   width: 0;
   border-right: 1px solid #e3e6f0;
   height: calc(4.375rem - 2rem);
   margin: auto 1rem;
 }
-
 .topbar .nav-item .nav-link {
   height: 4.375rem;
   display: flex;
@@ -1220,33 +1190,27 @@ a:focus {
   color: #d1d3e2;
   position: relative;
 }
-
 .topbar .nav-item .nav-link:hover {
   color: #b7b9cc;
 }
-
 .topbar .nav-item .nav-link .img-profile {
   height: 2rem;
   width: 2rem;
   border-radius: 50%;
 }
-
 .topbar .dropdown {
   position: relative;
 }
-
 .topbar .dropdown-menu {
-    right: 0;
-    left: auto;
-    min-width: 18rem;
+  right: 0;
+  left: auto;
+  min-width: 18rem;
 }
-
 .topbar .dropdown-list {
   padding: 0;
   border: none;
   overflow: hidden;
 }
-
 .topbar .dropdown-list .dropdown-header {
   background-color: #4e73df;
   border: 1px solid #4e73df;
@@ -1254,7 +1218,6 @@ a:focus {
   padding-bottom: 0.75rem;
   color: #fff;
 }
-
 .topbar .dropdown-list .dropdown-item {
   white-space: normal;
   padding-top: 0.5rem;
@@ -1264,19 +1227,16 @@ a:focus {
   border-bottom: 1px solid #e3e6f0;
   line-height: 1.3rem;
 }
-
 .topbar .dropdown-list .dropdown-item .dropdown-list-image {
   position: relative;
   height: 2.5rem;
   width: 2.5rem;
 }
-
 .topbar .dropdown-list .dropdown-item .dropdown-list-image img {
   height: 2.5rem;
   width: 2.5rem;
   border-radius: 50%;
 }
-
 .topbar .dropdown-list .dropdown-item .dropdown-list-image .status-indicator {
   background-color: #eaecf4;
   height: 0.75rem;
@@ -1287,15 +1247,12 @@ a:focus {
   right: 0;
   border: 0.125rem solid #fff;
 }
-
 .topbar .dropdown-list .dropdown-item .status-indicator.bg-success {
   background-color: #1cc88a !important;
 }
-
 .topbar .dropdown-list .dropdown-item .status-indicator.bg-warning {
   background-color: #f6c23e !important;
 }
-
 .badge-counter {
   position: absolute;
   transform: scale(0.7);
@@ -1305,65 +1262,58 @@ a:focus {
 }
 
 .d-sm-flex {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    flex-wrap: wrap;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap;
 }
-
 .d-sm-flex .h3 {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
-
 .d-sm-flex .btn {
-    flex-shrink: 0;
-    margin-left: 1rem;
-    color: #fff;
-    background-color: #4e73df;
-    border-color: #4e73df;
+  flex-shrink: 0;
+  margin-left: 1rem;
+  color: #fff;
+  background-color: #4e73df;
+  border-color: #4e73df;
 }
-
 .d-sm-flex .btn :hover {
-    color: #fffb !important;
-    background-color: #07153f;
-    border-color: #4e73df;
+  color: #fffb !important;
+  background-color: #07153f;
+  border-color: #4e73df;
 }
 
 @media (max-width: 576px) {
-    .d-sm-flex {
-        flex-direction: column;
-        align-items: flex-start !important;
-        gap: 0.75rem;
-    }
-    
-    .d-sm-flex .btn {
-        margin-left: 0;
-        width: 100%;
-    }
-}
-
-/* FOOTER */
-footer.sticky-footer {
-    margin-top: auto;
+  .d-sm-flex {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+  .d-sm-flex .btn {
+    margin-left: 0;
     width: 100%;
-    height: 36px;
-    min-height: 36px;
-    padding: 8px 0;
-    background:#002a66;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+  }
 }
 
+footer.sticky-footer {
+  margin-top: auto;
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 8px 0;
+  background: #002a66;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 footer.sticky-footer .copyright {
-    margin: 0;
-    font-size: 12px;
-    line-height: 1;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1;
 }
 
-/* RESPONSIVE */
 @media (min-width: 576px) {
   .topbar .dropdown {
     position: relative;
@@ -1395,261 +1345,187 @@ footer.sticky-footer .copyright {
   align-items: center;
   justify-content: center;
 }
-
 .btn-circle.btn-sm {
   height: 1.8rem;
   width: 1.8rem;
   font-size: 0.75rem;
 }
 
-.btn-google {
-  color: #fff;
-  background-color: #ea4335;
-  border-color: #fff;
-}
-
-.btn-google:hover {
-  color: #fff;
-  background-color: #e12717;
-  border-color: #e6e6e6;
-}
-
-.btn-facebook {
-  color: #fff;
-  background-color: #3b5998;
-  border-color: #fff;
-}
-
-.btn-facebook:hover {
-  color: #fff;
-  background-color: #30497c;
-  border-color: #e6e6e6;
-}
-
-form.user .form-control-user {
-  font-size: 0.8rem;
-  border-radius: 10rem;
-  padding: 1.5rem 1rem;
-}
-
-form.user .btn-user {
-  font-size: 0.8rem;
-  border-radius: 10rem;
-  padding: 0.75rem 1rem;
-}
-
-.bg-login-image {
-  background: url(img/company_login.png);
-  background-position: center;
-  background-size: cover;
-}
-
-.bg-register-image {
-  background: url(img/company_register.png);
-  background-position: center;
-  background-size: cover;
-}
-
-.bg-password-image {
-  background: url(img/company_password.png);
-  background-position: center;
-  background-size: cover;
-}
-
-.card .card-header[data-toggle="collapse"] {
-  text-decoration: none;
-  position: relative;
-  padding: 0.75rem 3.25rem 0.75rem 1.25rem;
-}
-
-.card .card-header[data-toggle="collapse"]::after {
-  position: absolute;
-  right: 0;
-  top: 0;
-  padding-right: 1.725rem;
-  line-height: 51px;
-  font-weight: 900;
-  content: '\f107';
-  font-family: 'Font Awesome 5 Free';
-  color: #d1d3e2;
-}
-
-.card .card-header[data-toggle="collapse"].collapsed::after {
-  content: '\f105';
-}
-
 /* ===== SIDEBAR FIX ===== */
 #sidebar-container {
-    display: flex;
-    flex-shrink: 0;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-    align-self: flex-start;
+  display: flex;
+  flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
 }
-
 .sidebar {
-    position: relative !important;
-    height: 100vh !important;
-    min-height: 100vh !important;
-    width: 6.5rem !important;
-    flex-shrink: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
+  position: relative !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  width: 6.5rem !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
-
 #wrapper {
-    display: flex !important;
-    align-items: flex-start !important;
+  display: flex !important;
+  align-items: flex-start !important;
 }
-
 #wrapper #content-wrapper {
-    flex: 1 1 auto !important;
-    width: auto !important;
-    min-width: 0 !important;
-    overflow-x: hidden !important;
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
 }
 
 @media (min-width: 768px) {
-    .sidebar {
-        width: 14rem !important;
-    }
+  .sidebar {
+    width: 14rem !important;
+  }
 }
 
 @media (max-width: 768px) {
-    #sidebar-container {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        height: 100vh !important;
-        z-index: 1050 !important;
-        width: 0 !important;
-        overflow: hidden !important;
-        transition: width 0.3s ease !important;
-        align-self: auto !important;
-    }
-    
-    #sidebar-container.toggled {
-        width: 14rem !important;
-    }
-    
-    .sidebar {
-        width: 100% !important;
-        height: 100vh !important;
-        position: relative !important;
-    }
-}
-
-/* Ensure charts are visible and full width */
-.chart-area {
-    position: relative;
-    height: 300px;
-    width: 100%;
-}
-
-.chart-pie {
-    position: relative;
-    height: 300px;
-    width: 100%;
-}
-
-.chart-area canvas,
-.chart-pie canvas {
+  #sidebar-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 1050 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    transition: width 0.3s ease !important;
+    align-self: auto !important;
+  }
+  #sidebar-container.toggled {
+    width: 14rem !important;
+  }
+  .sidebar {
     width: 100% !important;
-    height: 100% !important;
-    max-height: 100%;
+    height: 100vh !important;
+    position: relative !important;
+  }
 }
 
 /* Make container push footer down */
 #content {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
-
 .container-fluid {
-    flex: 1 0 auto;
+  flex: 1 0 auto;
 }
 
 /* ===== CUSTOM STYLES FOR GENERATE QUOTE PAGE ===== */
 .client-info {
-    background: #f0f4ff;
-    padding: 1rem 1.5rem;
-    border-radius: 0.5rem;
-    border-left: 4px solid #4e73df;
-    margin-bottom: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+  background: #f0f4ff;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #4e73df;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
 }
 .client-info strong { color: #1e3c72; }
 .client-info a { color: #4e73df; text-decoration: none; }
 .client-info a:hover { text-decoration: underline; }
 
 .service-item {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    border: 1px solid #e3e6f0;
-    border-radius: 0.5rem;
-    margin-bottom: 0.5rem;
-    transition: all 0.2s;
-    cursor: pointer;
-    background: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e3e6f0;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  background: #fff;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 .service-item:hover { background: #f8f9fc; border-color: #4e73df; }
 .service-item input[type="checkbox"] {
-    width: 1.2rem;
-    height: 1.2rem;
-    margin-right: 1rem;
-    cursor: pointer;
-    flex-shrink: 0;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
 }
-.service-item .service-info { flex: 1; }
+.service-item .service-info { flex: 1; min-width: 150px; }
 .service-item .service-info .name { font-weight: 600; color: #1e3c72; }
 .service-item .service-info .desc { font-size: 0.85rem; color: #858796; margin-top: 2px; }
-.service-item .service-price { font-weight: 700; color: #1e3c72; margin-right: 1rem; white-space: nowrap; }
+.service-item .service-price { font-weight: 700; color: #1e3c72; margin-right: 0.5rem; white-space: nowrap; }
+.service-item .service-monthly { font-size: 0.8rem; color: #36b9cc; margin-right: 0.5rem; white-space: nowrap; }
 .service-item .qty-input {
-    width: 60px;
-    padding: 0.35rem 0.5rem;
-    border: 1px solid #d1d3e2;
-    border-radius: 0.35rem;
-    text-align: center;
-    font-size: 0.9rem;
+  width: 60px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #d1d3e2;
+  border-radius: 0.35rem;
+  text-align: center;
+  font-size: 0.9rem;
 }
+.service-item .months-input {
+  width: 70px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #d1d3e2;
+  border-radius: 0.35rem;
+  text-align: center;
+  font-size: 0.9rem;
+  display: none;
+}
+.service-item .months-input.show { display: inline-block; }
 .service-item.selected { background: #f0f4ff; border-color: #4e73df; box-shadow: 0 0 0 2px rgba(78, 115, 223, 0.1); }
+.service-item .subscription-badge {
+  font-size: 0.65rem;
+  background: #36b9cc;
+  color: #fff;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  margin-left: 0.5rem;
+}
 
 .select-all {
-    margin-bottom: 1rem;
-    padding: 0.5rem 1rem;
-    background: #f8f9fc;
-    border-radius: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background: #f8f9fc;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 .select-all input[type="checkbox"] { width: 1.2rem; height: 1.2rem; cursor: pointer; }
 .select-all label { font-weight: 600; cursor: pointer; color: #1e3c72; }
 .select-all .count { color: #858796; font-size: 0.85rem; margin-left: auto; }
 
+.category-header {
+  font-weight: 700;
+  color: #4e73df;
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+  border-bottom: 2px solid #e3e6f0;
+}
+
 .summary-box {
-    background: #f8f9fc;
-    padding: 1rem 1.5rem;
-    border-radius: 0.5rem;
-    margin-top: 1.5rem;
-    border: 2px dashed #d1d3e2;
+  background: #f8f9fc;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  margin-top: 1.5rem;
+  border: 2px dashed #d1d3e2;
 }
 .summary-box .total { font-size: 1.3rem; font-weight: 800; color: #1e3c72; }
 
 .actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e3e6f0;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e3e6f0;
+  flex-wrap: wrap;
 }
 
 .error-messages { background: #fee2e2; color: #dc2626; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
@@ -1674,6 +1550,18 @@ form.user .btn-user {
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
+
+                    <!-- Topbar Search -->
+                    <form class="form-inline mr-auto ml-3 navbar-search">
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button">
+                                    <i class="fas fa-search fa-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -1806,7 +1694,7 @@ form.user .btn-user {
                             <i class="fas fa-plus-circle" style="color:#1cc88a;"></i> Create Quote
                         </h1>
                         <a href="client-quote.php?id=<?php echo $client_id; ?>" class="btn btn-sm btn-secondary shadow-sm">
-                            <i class="fas fa-arrow-left fa-sm"></i> Back to Quotes
+                            <i class="fas fa-arrow-left"></i> Back to Quotes
                         </a>
                     </div>
 
@@ -1850,21 +1738,37 @@ form.user .btn-user {
                                             </span>
                                         </div>
                                         
-                                        <!-- Services List -->
+                                        <!-- Services List by Category -->
                                         <div id="servicesList">
-                                            <?php foreach ($services as $service): ?>
+                                            <?php foreach ($categories as $category => $category_services): ?>
+                                            <div class="category-header"><?php echo htmlspecialchars($category); ?></div>
+                                            <?php foreach ($category_services as $service): ?>
                                             <div class="service-item" onclick="toggleCheckbox(<?php echo $service['id']; ?>)">
                                                 <input type="checkbox" name="services[]" value="<?php echo $service['id']; ?>" 
                                                        id="service_<?php echo $service['id']; ?>" 
                                                        onchange="updateSummary()">
                                                 <div class="service-info">
-                                                    <div class="name"><i class="fas fa-cube" style="color:#4e73df; font-size:0.8rem;"></i> <?php echo htmlspecialchars($service['name']); ?></div>
+                                                    <div class="name">
+                                                        <?php echo htmlspecialchars($service['service_name']); ?>
+                                                        <?php if ($service['monthly_subscription'] > 0): ?>
+                                                        <span class="subscription-badge"><i class="fas fa-clock"></i> Monthly</span>
+                                                        <?php endif; ?>
+                                                    </div>
                                                     <div class="desc"><?php echo htmlspecialchars($service['description']); ?></div>
                                                 </div>
                                                 <div class="service-price">R <?php echo number_format($service['price'], 2); ?></div>
+                                                <?php if ($service['monthly_subscription'] > 0): ?>
+                                                <div class="service-monthly"><i class="fas fa-calendar-alt"></i> R <?php echo number_format($service['monthly_subscription'], 2); ?>/mo</div>
+                                                <?php endif; ?>
+                                                <!-- QUANTITY INPUT -->
                                                 <input type="number" class="qty-input" name="quantities[<?php echo $service['id']; ?>]" 
                                                        value="1" min="1" max="999" onchange="updateSummary()" onclick="event.stopPropagation();">
+                                                <?php if ($service['monthly_subscription'] > 0): ?>
+                                                <input type="number" class="months-input show" name="subscription_months[<?php echo $service['id']; ?>]" 
+                                                       value="12" min="1" max="60" onchange="updateSummary()" onclick="event.stopPropagation();" placeholder="Months">
+                                                <?php endif; ?>
                                             </div>
+                                            <?php endforeach; ?>
                                             <?php endforeach; ?>
                                         </div>
                                         
@@ -1916,25 +1820,6 @@ form.user .btn-user {
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
-
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="logout.php">Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
@@ -2010,7 +1895,14 @@ form.user .btn-user {
             const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
             const service = services.find(s => s.id == id);
             if (service) {
-                total += service.price * qty;
+                let price = service.price;
+                // Check if subscription with months
+                const monthsInput = document.querySelector('input[name="subscription_months[' + id + ']"]');
+                if (monthsInput && service.monthly_subscription > 0) {
+                    const months = parseInt(monthsInput.value) || 12;
+                    price = service.monthly_subscription * months;
+                }
+                total += price * qty;
             }
         });
         
