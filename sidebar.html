@@ -59,10 +59,6 @@
             background: linear-gradient(180deg, #003986 0%, #002a66 100%);
         }
 
-        .bg-blue {
-            background-color: #003378 !important;
-        }
-
         .bg-white {
             background-color: #fff !important;
         }
@@ -197,20 +193,10 @@
         }
 
         /* ===== SIDEBAR STYLES - Full Height ===== */
-        /* Wrapper to ensure full height */
-        #sidebar-wrapper {
-            display: flex;
-            height: 100vh;
-            position: sticky;
-            top: 0;
-            align-self: stretch;
-        }
-
         .sidebar {
             width: 6.5rem;
             min-height: 100vh;
             height: 100vh;
-            /* position: sticky;  REMOVED - container handles this */
             top: 0;
             left: 0;
             z-index: 100;
@@ -221,15 +207,6 @@
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-        }
-
-        /* Ensure sidebar fills parent */
-        .sidebar-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            position: sticky;
-            top: 0;
         }
 
         /* Sidebar Brand */
@@ -362,7 +339,7 @@
             color: #fff;
         }
 
-        /* Collapse */
+        /* ===== DROPDOWN COLLAPSE - FIXED ===== */
         .sidebar .nav-item .collapse {
             position: absolute;
             left: calc(6.5rem + 1.5rem / 2);
@@ -373,40 +350,50 @@
         .sidebar .nav-item .collapse .collapse-inner {
             border-radius: 0.35rem;
             box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-            padding: .5rem 0;
-            min-width: 10rem;
+            padding: 0.5rem 0;
+            min-width: 12rem;
             font-size: 0.85rem;
-            margin: 0 0 1rem 0;
+            background: #ffffff;
+            border: 1px solid #e3e6f0;
         }
 
         .sidebar .nav-item .collapse .collapse-inner .collapse-header {
             margin: 0;
             white-space: nowrap;
-            padding: .5rem 1.5rem;
+            padding: 0.5rem 1.5rem;
             text-transform: uppercase;
             font-weight: 800;
             font-size: 0.65rem;
             color: #b7b9cc;
+            border-bottom: 1px solid #e3e6f0;
         }
 
         .sidebar .nav-item .collapse .collapse-inner .collapse-item {
-            padding: 0.5rem 1rem;
-            margin: 0 0.5rem;
+            padding: 0.5rem 1.5rem;
+            margin: 0;
             display: block;
-            color: #b0b3d5;
+            color: #3a3b45;
             text-decoration: none;
-            border-radius: 0.35rem;
             white-space: nowrap;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            font-weight: 500;
         }
 
+        /* FIXED: Clean hover effect - subtle blue background with blue text */
         .sidebar .nav-item .collapse .collapse-inner .collapse-item:hover {
-            background-color: #eaecf4;
+            background: #f0f4ff;
+            color: #003986;
             text-decoration: none;
+            border-left-color: #003986;
         }
 
+        /* FIXED: Active state with blue background and white text */
         .sidebar .nav-item .collapse .collapse-inner .collapse-item.active {
-            color: #003986;
+            color: #ffffff;
+            background: #003986;
             font-weight: 700;
+            border-left-color: #ffffff;
         }
 
         .sidebar .nav-item .collapsing {
@@ -582,7 +569,7 @@
                 padding: 1rem;
             }
 
-            /* Collapse in desktop */
+            /* Collapse in desktop - inline dropdown */
             .sidebar .nav-item .collapse {
                 position: relative;
                 left: 0;
@@ -594,6 +581,36 @@
             .sidebar .nav-item .collapse .collapse-inner {
                 border-radius: 0;
                 box-shadow: none;
+                background: transparent;
+                border: none;
+                padding: 0.25rem 0;
+                min-width: auto;
+            }
+
+            .sidebar .nav-item .collapse .collapse-inner .collapse-header {
+                color: rgba(255, 255, 255, 0.4);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                padding: 0.5rem 1rem;
+                font-size: 0.6rem;
+            }
+
+            .sidebar .nav-item .collapse .collapse-inner .collapse-item {
+                color: rgba(255, 255, 255, 0.7);
+                padding: 0.4rem 1rem;
+                border-left: 3px solid transparent;
+                font-weight: 400;
+            }
+
+            .sidebar .nav-item .collapse .collapse-inner .collapse-item:hover {
+                background: rgba(255, 255, 255, 0.08);
+                color: #fff;
+                border-left-color: #fff;
+            }
+
+            .sidebar .nav-item .collapse .collapse-inner .collapse-item.active {
+                background: rgba(255, 255, 255, 0.15);
+                color: #fff;
+                border-left-color: #fff;
             }
 
             .sidebar .nav-item .collapsing {
@@ -615,13 +632,14 @@
                 font-weight: 900;
                 content: '\f107';
                 font-family: 'Font Awesome 5 Free';
+                margin-left: auto;
             }
 
             .sidebar .nav-item .nav-link[data-toggle="collapse"].collapsed::after {
                 content: '\f105';
             }
 
-            /* Toggled state */
+            /* Toggled state (collapsed sidebar) */
             .sidebar.toggled {
                 overflow: visible;
                 width: 6.5rem !important;
@@ -649,11 +667,15 @@
                 display: block;
             }
 
+            .sidebar.toggled .nav-item .nav-link[data-toggle="collapse"]::after {
+                display: none;
+            }
+
             .sidebar.toggled .nav-item .collapse {
                 position: absolute;
-                left: calc(6.5rem + 1.5rem / 2);
+                left: calc(6.5rem + 0.5rem);
                 z-index: 1;
-                top: 2px;
+                top: 0;
                 animation-name: growIn;
                 animation-duration: 200ms;
                 animation-timing-function: transform cubic-bezier(0.18, 1.25, 0.4, 1), opacity cubic-bezier(0, 1, 0.4, 1);
@@ -662,6 +684,34 @@
             .sidebar.toggled .nav-item .collapse .collapse-inner {
                 box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
                 border-radius: 0.35rem;
+                background: #ffffff;
+                border: 1px solid #e3e6f0;
+                min-width: 12rem;
+                padding: 0.5rem 0;
+            }
+
+            .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-header {
+                color: #b7b9cc;
+                border-bottom: 1px solid #e3e6f0;
+                padding: 0.5rem 1.5rem;
+            }
+
+            .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-item {
+                color: #3a3b45;
+                padding: 0.5rem 1.5rem;
+                border-left: 3px solid transparent;
+            }
+
+            .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-item:hover {
+                background: #f0f4ff;
+                color: #003986;
+                border-left-color: #003986;
+            }
+
+            .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-item.active {
+                background: #003986;
+                color: #ffffff;
+                border-left-color: #ffffff;
             }
 
             .sidebar.toggled .nav-item .collapsing {
@@ -672,10 +722,6 @@
             .sidebar.toggled .nav-item .collapse,
             .sidebar.toggled .nav-item .collapsing {
                 margin: 0;
-            }
-
-            .sidebar.toggled .nav-item .nav-link[data-toggle="collapse"]::after {
-                display: none;
             }
 
             .sidebar.toggled .sidebar-brand .sidebar-brand-icon i {
@@ -751,6 +797,43 @@
                 text-align: left;
                 padding: 0.5rem 1.2rem;
             }
+
+            /* Mobile dropdown fixes */
+            .sidebar.toggled .nav-item .collapse {
+                position: relative;
+                left: 0;
+                top: 0;
+            }
+
+            .sidebar.toggled .nav-item .collapse .collapse-inner {
+                background: rgba(255, 255, 255, 0.05);
+                box-shadow: none;
+                border: none;
+                padding: 0.25rem 0;
+            }
+
+            .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-header {
+                color: rgba(255, 255, 255, 0.4);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            }
+
+            .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-item {
+                color: rgba(255, 255, 255, 0.7);
+                padding: 0.4rem 1.5rem;
+                border-left: 3px solid transparent;
+            }
+
+            .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-item:hover {
+                background: rgba(255, 255, 255, 0.08);
+                color: #fff;
+                border-left-color: #fff;
+            }
+
+            .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-item.active {
+                background: rgba(255, 255, 255, 0.15);
+                color: #fff;
+                border-left-color: #fff;
+            }
         }
 
         /* Animation */
@@ -792,7 +875,7 @@
 </head>
 
 <body>
-    <!-- Sidebar Container -->
+    <!-- Sidebar -->
     <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
         <!-- Sidebar - Brand with Image -->
         <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
@@ -816,15 +899,15 @@
         <!-- Heading -->
         <div class="sidebar-heading">Interface</div>
 
-
-        <!-- Nav Item - Clients-->
+        <!-- Nav Item - Clients -->
         <li class="nav-item">
             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities" aria-expanded="true" aria-controls="collapseUtilities">
                 <i class="fas fa-fw fa-wrench"></i>
                 <span>Client Management</span>
             </a>
             <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
-                <div class="bg-black py-2 collapse-inner rounded">
+                <div class="py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Client Options:</h6>
                     <a class="collapse-item" href="clients.php">Clients</a>
                     <a class="collapse-item" href="client-add.php">Add Client</a>
                     <a class="collapse-item" href="client-reports.php">Reports</a>
@@ -840,7 +923,7 @@
                 <span>Components</span>
             </a>
             <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                <div class="bg-blue py-2 collapse-inner rounded">
+                <div class="py-2 collapse-inner rounded">
                     <h6 class="collapse-header">Custom Components:</h6>
                     <a class="collapse-item" href="buttons.html">Buttons</a>
                     <a class="collapse-item" href="cards.html">Cards</a>
@@ -861,7 +944,7 @@
                 <span>Pages</span>
             </a>
             <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                <div class="bg-blue py-2 collapse-inner rounded">
+                <div class="py-2 collapse-inner rounded">
                     <h6 class="collapse-header">Login Screens:</h6>
                     <a class="collapse-item" href="login.html">Login</a>
                     <a class="collapse-item" href="register.html">Register</a>

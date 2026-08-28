@@ -47,70 +47,180 @@ $first_name = $_SESSION['first_name'] ?? 'User';
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
 
-    <!-- Page level plugins -->
-    <script src="vendor/chart.js/Chart.min.js"></script>
+    <!-- Custom styles for this template-->
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
 
-<style>
-/* ===== COPY ALL YOUR INDEX.PHP CSS HERE ===== */
-:root {
-  --blue: #002a66;
-  --indigo: #6610f2;
-  --purple: #6f42c1;
-  --pink: #e83e8c;
-  --red: #e74a3b;
-  --orange: #fd7e14;
-  --yellow: #f6c23e;
-  --green: #1cc88a;
-  --teal: #20c9a6;
-  --cyan: #36b9cc;
-  --white: #fff;
-  --gray: #858796;
-  --gray-dark: #5a5c69;
-  --primary: #4e73df;
-  --secondary: #858796;
-  --success: #1cc88a;
-  --info: #36b9cc;
-  --warning: #f6c23e;
-  --danger: #e74a3b;
-  --light: #f8f9fc;
-  --dark: #5a5c69;
-  --breakpoint-xs: 0;
-  --breakpoint-sm: 576px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 992px;
-  --breakpoint-xl: 1200px;
-  --font-family-sans-serif: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
+    <style>
+        /* ===== SIDEBAR LOADING FIXES ===== */
+        #sidebar-container {
+            min-height: 100vh;
+        }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+        #sidebar-container .sidebar {
+            min-height: 100vh;
+        }
 
-html {
-  font-family: sans-serif;
-  line-height: 1.15;
-  -webkit-text-size-adjust: 100%;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-}
+        #sidebar-container .sidebar .nav-item .collapse .collapse-inner {
+            background: #fff;
+        }
 
-/* ... ALL THE SAME CSS AS INDEX.PHP ... */
-/* (Copy all the CSS from your index.php here, up to the custom styles) */
+        #sidebar-container .sidebar .nav-item .collapse .collapse-inner .collapse-item {
+            color: #3a3b45;
+        }
 
-/* ===== CUSTOM STYLES FOR CLIENT QUOTE PAGE ===== */
-.client-info-box {
-    background: #fff;
-    padding: 1.5rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    margin-bottom: 2rem;
-}
-.client-info-box h2 { color: #1e3c72; margin-bottom: 0.5rem; }
-.client-info-box .details { display: flex; gap: 2rem; flex-wrap: wrap; color: #666; }
-.client-info-box .details span { display: flex; align-items: center; gap: 0.5rem; }
+        #sidebar-container .sidebar .nav-item .collapse .collapse-inner .collapse-item:hover {
+            background: #f0f4ff;
+            color: #003986;
+        }
 
-.actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-</style>
+        #sidebar-container .sidebar .nav-item .collapse .collapse-inner .collapse-item.active {
+            background: #003986;
+            color: #fff;
+        }
+
+        /* ===== CLIENT INFO BOX ===== */
+        .client-info-box {
+            background: #fff;
+            padding: 1.5rem 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.10);
+            margin-bottom: 2rem;
+            border-left: 4px solid #4e73df;
+        }
+
+        .client-info-box h2 {
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            font-size: 1.5rem;
+        }
+
+        .client-info-box .details {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .client-info-box .details span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .client-info-box .details i {
+            color: #4e73df;
+            width: 1.2rem;
+        }
+
+        /* ===== TABLE ===== */
+        .table {
+            font-size: 0.9rem;
+        }
+
+        .table thead th {
+            background: #f8f9fc;
+            color: #5a5c69;
+            font-weight: 700;
+            border-bottom: 2px solid #e3e6f0;
+        }
+
+        .table tbody td {
+            vertical-align: middle;
+            padding: 0.75rem;
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            font-weight: 600;
+            font-size: 0.75rem;
+            border-radius: 20px;
+        }
+
+        .badge-draft {
+            background: #f8f9fc;
+            color: #5a5c69;
+        }
+
+        .badge-sent {
+            background: #36b9cc;
+            color: #fff;
+        }
+
+        .badge-accepted {
+            background: #1cc88a;
+            color: #fff;
+        }
+
+        .badge-rejected {
+            background: #e74a3b;
+            color: #fff;
+        }
+
+        .badge-expired {
+            background: #858796;
+            color: #fff;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .actions .btn {
+            padding: 0.2rem 0.6rem;
+            font-size: 0.8rem;
+            border-radius: 0.35rem;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .client-info-box {
+                padding: 1rem;
+            }
+            .client-info-box .details {
+                gap: 0.8rem;
+                font-size: 0.85rem;
+            }
+            .client-info-box h2 {
+                font-size: 1.2rem;
+            }
+            .table-responsive {
+                font-size: 0.8rem;
+            }
+            .actions .btn {
+                padding: 0.15rem 0.4rem;
+                font-size: 0.7rem;
+            }
+            .d-sm-flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .d-sm-flex .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .client-info-box .details {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .table-responsive {
+                font-size: 0.7rem;
+            }
+            .table td, .table th {
+                padding: 0.4rem;
+            }
+            .badge {
+                font-size: 0.6rem;
+                padding: 0.2rem 0.5rem;
+            }
+        }
+    </style>
 </head>
 <body id="page-top">
     <div id="wrapper">
@@ -119,7 +229,7 @@ html {
 
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
-                <!-- Topbar - Same as index.php -->
+                <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
@@ -153,9 +263,9 @@ html {
                 <div class="container-fluid">
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">
-                            <i class="fas fa-file-invoice"></i> Client Quotes
+                            <i class="fas fa-file-invoice text-primary"></i> Client Quotes
                         </h1>
-                        <div>
+                        <div class="d-flex gap-2" style="gap: 0.5rem;">
                             <a href="clients.php" class="btn btn-sm btn-secondary shadow-sm">
                                 <i class="fas fa-arrow-left"></i> Back to Clients
                             </a>
@@ -181,13 +291,20 @@ html {
                         <div class="col-12">
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">All Quotes</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">
+                                        <i class="fas fa-list"></i> All Quotes
+                                    </h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <?php if (empty($quotes)): ?>
-                                            <p class="text-center text-muted">No quotes found for this client.</p>
-                                            <p class="text-center"><a href="generate-quote.php?client_id=<?php echo $client_id; ?>" class="btn btn-success">Create First Quote</a></p>
+                                            <div class="text-center py-5">
+                                                <i class="fas fa-file-invoice fa-3x text-gray-300 mb-3"></i>
+                                                <p class="text-muted">No quotes found for this client.</p>
+                                                <a href="generate-quote.php?client_id=<?php echo $client_id; ?>" class="btn btn-success">
+                                                    <i class="fas fa-plus"></i> Create First Quote
+                                                </a>
+                                            </div>
                                         <?php else: ?>
                                         <table class="table table-bordered" width="100%" cellspacing="0">
                                             <thead>
@@ -206,7 +323,7 @@ html {
                                                     <td><strong><?php echo htmlspecialchars($quote['quote_number']); ?></strong></td>
                                                     <td><?php echo date('d/m/Y', strtotime($quote['quote_date'])); ?></td>
                                                     <td><?php echo date('d/m/Y', strtotime($quote['expiry_date'])); ?></td>
-                                                    <td>R <?php echo number_format($quote['grand_total'], 2); ?></td>
+                                                    <td><strong>R <?php echo number_format($quote['grand_total'], 2); ?></strong></td>
                                                     <td>
                                                         <span class="badge badge-<?php echo $quote['status']; ?>">
                                                             <?php echo ucfirst($quote['status']); ?>
@@ -222,6 +339,9 @@ html {
                                                                 <i class="fas fa-file-pdf"></i>
                                                             </a>
                                                             <?php endif; ?>
+                                                            <a href="edit-quote.php?id=<?php echo $quote['id']; ?>" class="btn btn-sm btn-info" title="Edit">
+                                                                <i class="fas fa-edit"></i>
+                                                            </a>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -235,16 +355,19 @@ html {
                         </div>
                     </div>
                 </div>
-
-                <footer class="sticky-footer bg-blue">
-                    <div class="copyright text-center">
-                        <span>Copyright &copy; Marlani Technologies 2026</span>
-                    </div>
-                </footer>
             </div>
+
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; Marlani Technologies <?php echo date('Y'); ?></span>
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
 
+    <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
@@ -252,9 +375,26 @@ html {
 
     <script>
     $(function() {
+        // Load sidebar from external file
         $("#sidebar-container").load("sidebar.html", function() {
             console.log("Sidebar loaded successfully");
-            $('#sidebarToggleTop').on('click', function() {
+            
+            // Set active state for current page
+            $('#sidebar-container .nav-item').removeClass('active');
+            $('#sidebar-container .nav-item a[href*="client-quote"]').closest('.nav-item').addClass('active');
+            
+            // Find and highlight the parent menu if in submenu
+            $('#sidebar-container .nav-item .collapse .collapse-item').each(function() {
+                if ($(this).attr('href') && $(this).attr('href').includes('client-quote')) {
+                    $(this).addClass('active');
+                    $(this).closest('.collapse').addClass('show');
+                    $(this).closest('.nav-item').find('.nav-link').removeClass('collapsed');
+                }
+            });
+            
+            // Sidebar toggle for mobile
+            $('#sidebarToggleTop').on('click', function(e) {
+                e.preventDefault();
                 $('#sidebar-container').toggleClass('toggled');
                 if ($('#sidebar-container').hasClass('toggled')) {
                     $('body').append('<div class="sidebar-overlay active"></div>');
@@ -262,9 +402,19 @@ html {
                     $('.sidebar-overlay').remove();
                 }
             });
+            
+            // Close sidebar on overlay click
             $(document).on('click', '.sidebar-overlay', function() {
                 $('#sidebar-container').removeClass('toggled');
                 $('.sidebar-overlay').remove();
+            });
+            
+            // Handle window resize - remove toggled state on desktop
+            $(window).resize(function() {
+                if ($(window).width() > 768) {
+                    $('#sidebar-container').removeClass('toggled');
+                    $('.sidebar-overlay').remove();
+                }
             });
         });
     });
