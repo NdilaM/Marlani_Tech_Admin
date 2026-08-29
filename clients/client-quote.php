@@ -3,11 +3,11 @@
 session_start();
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header('Location: login.html');
+    header('Location: ../login.html');
     exit();
 }
 
-require_once 'db.php';
+require_once '../db.php';
 
 $client_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -44,11 +44,11 @@ $first_name = $_SESSION['first_name'] ?? 'User';
     <title>Marlani Admin - Client Quotes</title>
 
     <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
 
     <!-- Custom styles for this template-->
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="../css/sb-admin-2.min.css" rel="stylesheet">
 
     <style>
         /* ===== SIDEBAR LOADING FIXES ===== */
@@ -175,6 +175,10 @@ $first_name = $_SESSION['first_name'] ?? 'User';
             border-radius: 0.35rem;
         }
 
+                /* ===== BUTTON HOVER FIX ===== */
+        .btn:hover {
+            color: #ffffff !important;
+        } 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .client-info-box {
@@ -235,26 +239,19 @@ $first_name = $_SESSION['first_name'] ?? 'User';
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <form class="form-inline mr-auto ml-3 navbar-search">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                        <h1 class="h3 mb-0 text-gray-800">
+                            <i class="fas fa-file-invoice text-primary"></i> Client Quotes
+                        </h1>
 
                     <ul class="navbar-nav ml-auto">
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo htmlspecialchars($first_name); ?></span>
-                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+                                <img class="img-profile rounded-circle" src="../img/undraw_profile.svg">
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout</a>
+                                <a class="dropdown-item" href="../logout.php"><i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout</a>
                             </div>
                         </li>
                     </ul>
@@ -262,14 +259,12 @@ $first_name = $_SESSION['first_name'] ?? 'User';
 
                 <div class="container-fluid">
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">
-                            <i class="fas fa-file-invoice text-primary"></i> Client Quotes
-                        </h1>
+
                         <div class="d-flex gap-2" style="gap: 0.5rem;">
                             <a href="clients.php" class="btn btn-sm btn-secondary shadow-sm">
                                 <i class="fas fa-arrow-left"></i> Back to Clients
                             </a>
-                            <a href="generate-quote.php?client_id=<?php echo $client_id; ?>" class="btn btn-sm btn-success shadow-sm">
+                            <a href="Quotes/generate-quote.php?client_id=<?php echo $client_id; ?>" class="btn btn-sm btn-success shadow-sm">
                                 <i class="fas fa-plus"></i> New Quote
                             </a>
                         </div>
@@ -301,7 +296,7 @@ $first_name = $_SESSION['first_name'] ?? 'User';
                                             <div class="text-center py-5">
                                                 <i class="fas fa-file-invoice fa-3x text-gray-300 mb-3"></i>
                                                 <p class="text-muted">No quotes found for this client.</p>
-                                                <a href="generate-quote.php?client_id=<?php echo $client_id; ?>" class="btn btn-success">
+                                                <a href="Quotes/generate-quote.php?client_id=<?php echo $client_id; ?>" class="btn btn-success">
                                                     <i class="fas fa-plus"></i> Create First Quote
                                                 </a>
                                             </div>
@@ -331,7 +326,7 @@ $first_name = $_SESSION['first_name'] ?? 'User';
                                                     </td>
                                                     <td>
                                                         <div class="actions">
-                                                            <a href="view-quote.php?id=<?php echo $quote['id']; ?>" class="btn btn-sm btn-primary" title="View">
+                                                            <a href="Quotes/view-quote.php?id=<?php echo $quote['id']; ?>" class="btn btn-sm btn-primary" title="View">
                                                                 <i class="fas fa-eye"></i>
                                                             </a>
                                                             <?php if ($quote['pdf_path']): ?>
@@ -339,7 +334,7 @@ $first_name = $_SESSION['first_name'] ?? 'User';
                                                                 <i class="fas fa-file-pdf"></i>
                                                             </a>
                                                             <?php endif; ?>
-                                                            <a href="edit-quote.php?id=<?php echo $quote['id']; ?>" class="btn btn-sm btn-info" title="Edit">
+                                                            <a href="../clients/Quotes/edit-quote.php?id=<?php echo $quote['id']; ?>" class="btn btn-sm btn-info" title="Edit">
                                                                 <i class="fas fa-edit"></i>
                                                             </a>
                                                         </div>
@@ -368,15 +363,15 @@ $first_name = $_SESSION['first_name'] ?? 'User';
     </div>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-    <script src="js/sb-admin-2.min.js"></script>
+    <script src="../vendor/jquery/jquery.min.js"></script>
+    <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="../js/sb-admin-2.min.js"></script>
 
     <script>
     $(function() {
         // Load sidebar from external file
-        $("#sidebar-container").load("sidebar.html", function() {
+        $("#sidebar-container").load("../sidebar.html", function() {
             console.log("Sidebar loaded successfully");
             
             // Set active state for current page

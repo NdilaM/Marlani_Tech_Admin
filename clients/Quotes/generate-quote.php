@@ -1,35 +1,156 @@
 <?php
-// clients.php - Clients Dashboard
+// generate-quote.php - Generate New Quote with Services from Database
 session_start();
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header('Location: login.html');
+    header('Location: ../../login.html');
     exit();
 }
 
-require_once 'db.php';
+require_once '../../db.php';
+
+$client_id = isset($_GET['client_id']) ? (int)$_GET['client_id'] : 0;
+
+if ($client_id == 0) {
+    header('Location: ../clients.php');
+    exit();
+}
+
+// Get client info
+$stmt = $conn->prepare("SELECT * FROM clients WHERE id = ?");
+$stmt->execute([$client_id]);
+$client = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$client) {
+    header('Location: ../clients.php');
+    exit();
+}
+
+// ============================================
+// GET SERVICES FROM DATABASE
+// ============================================
+$stmt = $conn->query("SELECT * FROM services WHERE is_active = 1 ORDER BY category, service_name");
+$services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Group services by category
+$categories = [];
+foreach ($services as $service) {
+    $cat = $service['category'] ?? 'Uncategorized';
+    if (!isset($categories[$cat])) {
+        $categories[$cat] = [];
+    }
+    $categories[$cat][] = $service;
+}
+
+$errors = [];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $selected_services = isset($_POST['services']) ? $_POST['services'] : [];
+    $quantities = isset($_POST['quantities']) ? $_POST['quantities'] : [];
+    $subscription_months = isset($_POST['subscription_months']) ? $_POST['subscription_months'] : [];
+    
+    if (empty($selected_services)) {
+        $errors[] = "Please select at least one service.";
+    }
+    
+    if (empty($errors)) {
+        $items = [];
+        foreach ($selected_services as $service_id) {
+            foreach ($services as $service) {
+                if ($service['id'] == $service_id) {
+                    $qty = isset($quantities[$service_id]) && $quantities[$service_id] > 0 ? (int)$quantities[$service_id] : 1;
+                    
+                    // Check if this is a subscription service
+                    $is_subscription = $service['monthly_subscription'] > 0;
+                    $months = 0;
+                    $unit_price = $service['price'];
+                    
+                    if ($is_subscription) {
+                        $months = isset($subscription_months[$service_id]) && $subscription_months[$service_id] > 0 ? (int)$subscription_months[$service_id] : 12;
+                        // For subscription, unit price is the monthly fee * months
+                        $unit_price = $service['monthly_subscription'] * $months;
+                    }
+                    
+                    $items[] = [
+                        'item_name' => $service['service_name'],
+                        'description' => $service['description'],
+                        'quantity' => $qty,
+                        'unit_price' => $unit_price,
+                        'is_subscription' => $is_subscription,
+                        'monthly_fee' => $service['monthly_subscription'],
+                        'months' => $months,
+                        'original_price' => $service['price']
+                    ];
+                    break;
+                }
+            }
+        }
+        
+        $subtotal = 0;
+        foreach ($items as $item) {
+            $subtotal += $item['quantity'] * $item['unit_price'];
+        }
+        $grand_total = $subtotal;
+        
+        $quote_date = date('Y-m-d');
+        $expiry_date = date('Y-m-d', strtotime('+14 days'));
+        
+        $stmt = $conn->query("SELECT MAX(id) as max_id FROM quotations");
+        $max_id = $stmt->fetch(PDO::FETCH_ASSOC)['max_id'] ?? 0;
+        $quote_number = 'Q-' . date('Y') . '-' . str_pad(($max_id + 1), 4, '0', STR_PAD_LEFT);
+        
+        try {
+            $stmt = $conn->prepare("
+                INSERT INTO quotations (
+                    quote_number, 
+                    client_id, 
+                    quote_date, 
+                    expiry_date, 
+                    total_amount, 
+                    grand_total, 
+                    status, 
+                    created_by
+                ) VALUES (?, ?, ?, ?, ?, ?, 'draft', ?)
+            ");
+            
+            $stmt->execute([
+                $quote_number, 
+                $client_id, 
+                $quote_date, 
+                $expiry_date,
+                $subtotal, 
+                $grand_total, 
+                $_SESSION['staff_id'] ?? 1
+            ]);
+            
+            $quote_id = $conn->lastInsertId();
+            
+            foreach ($items as $item) {
+                $total = $item['quantity'] * $item['unit_price'];
+                $description = $item['description'];
+                if ($item['is_subscription']) {
+                    $description .= " (R" . number_format($item['monthly_fee'], 2) . " x " . $item['months'] . " months)";
+                }
+                $stmt = $conn->prepare("
+                    INSERT INTO quotation_items (quotation_id, item_name, description, quantity, unit_price, total)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([
+                    $quote_id, $item['item_name'], $description, 
+                    $item['quantity'], $item['unit_price'], $total
+                ]);
+            }
+            
+            header('Location: view-quote.php?id=' . $quote_id);
+            exit();
+            
+        } catch(Exception $e) {
+            $errors[] = "Error creating quote: " . $e->getMessage();
+        }
+    }
+}
+
 $first_name = $_SESSION['first_name'] ?? 'User';
-
-// Get all clients
-$stmt = $conn->query("
-    SELECT c.*
-    FROM clients c 
-    ORDER BY c.company_name
-");
-$clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Get statistics
-$stmt = $conn->query("SELECT COUNT(*) as total, 
-                      SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
-                      SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive,
-                      SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending
-                      FROM clients");
-$stats = $stmt->fetch(PDO::FETCH_ASSOC);
-
-$total_clients = $stats['total'] ?? 0;
-$active_clients = $stats['active'] ?? 0;
-$inactive_clients = $stats['inactive'] ?? 0;
-$pending_clients = $stats['pending'] ?? 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,14 +160,16 @@ $pending_clients = $stats['pending'] ?? 0;
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Marlani Admin - Clients</title>
+    <title>Marlani Admin - Create Quote</title>
 
     <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="../../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
 
+    <!-- Custom styles for this template-->
+    <link href="../../css/sb-admin-2.min.css" rel="stylesheet">
+
 <style>
-/* ===== ALL CSS FROM VIEW-QUOTE.PHP ===== */
 :root {
   --blue: #002a66;
   --indigo: #6610f2;
@@ -787,113 +910,84 @@ a:focus {
   padding-right: 1.5rem;
 }
 
-/* Fix wrapper layout */
 #wrapper {
-    display: flex;
-    min-height: 100vh;
+  display: flex;
+  min-height: 100vh;
 }
-
 #content-wrapper {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100vh;
 }
-
 #content {
-    flex: 1 0 auto;
+  flex: 1 0 auto;
 }
 
-/* Sidebar positioning */
 .sidebar {
-    width: 6.5rem;
-    min-height: 100vh;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-    flex-shrink: 0;
-    z-index: 100;
-    overflow-y: auto;
-    overflow-x: hidden;
-    transition: width 0.3s ease;
-    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
-    display: flex;
-    flex-direction: column;
+  width: 6.5rem;
+  min-height: 100vh;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
+  z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.3s ease;
+  box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
 }
-
 #sidebar-container {
-    display: flex;
-    flex-shrink: 0;
-}
-
-.chart-area{
-    position:relative;
-    height:20rem;
-    width:100%;
-}
-
-.chart-pie{
-    position:relative;
-    height:15rem;
-    width:100%;
-}
-
-.chart-bar{
-    position:relative;
-    height:20rem;
-    width:100%;
+  display: flex;
+  flex-shrink: 0;
 }
 
 .topbar {
-    height: 4.375rem;
-    position: relative;
-    z-index: 10;
+  height: 4.375rem;
+  position: relative;
+  z-index: 10;
 }
-
 #content {
-    position: relative;
-    z-index: 1;
+  position: relative;
+  z-index: 1;
 }
 
-/* Desktop sidebar width */
 @media (min-width: 768px) {
-    .sidebar {
-        width: 14rem !important;
-    }
+  .sidebar {
+    width: 14rem !important;
+  }
 }
 
-/* Mobile sidebar - overlay */
 @media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        z-index: 1050;
-        width: 0 !important;
-        overflow: hidden;
-    }
-    
-    .sidebar.toggled {
-        width: 14rem !important;
-        overflow: visible;
-        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
-    }
-    
-    .sidebar-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1040;
-        display: none;
-    }
-    
-    .sidebar-overlay.active {
-        display: block;
-    }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1050;
+    width: 0 !important;
+    overflow: hidden;
+  }
+  .sidebar.toggled {
+    width: 14rem !important;
+    overflow: visible;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+  }
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    display: none;
+  }
+  .sidebar-overlay.active {
+    display: block;
+  }
 }
 
 .scroll-to-top {
@@ -910,12 +1004,10 @@ a:focus {
   border-radius: 50%;
   z-index: 999;
 }
-
 .scroll-to-top:hover {
   color: white;
   background: #5a5c69;
 }
-
 .scroll-to-top i {
   font-weight: 800;
 }
@@ -924,7 +1016,6 @@ a:focus {
   0% { transform: scale(0.9); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
-
 .animated--grow-in {
   animation-name: growIn;
   animation-duration: 200ms;
@@ -935,7 +1026,6 @@ a:focus {
   0% { opacity: 0; }
   100% { opacity: 1; }
 }
-
 .animated--fade-in {
   animation-name: fadeIn;
   animation-duration: 200ms;
@@ -1054,56 +1144,12 @@ a:focus {
   height: 4.375rem;
 }
 
-.topbar .navbar-search {
-    width: 25rem;
-}
-
-.topbar .navbar-search .input-group {
-    position: relative;
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    width: 100%;
-}
-
-.topbar .navbar-search .form-control {
-    font-size: 0.85rem;
-    height: auto;
-    padding-right: 3rem;
-    border-radius: 10rem 0 0 10rem;
-    border: 1px solid #d1d3e2;
-    background-color: #f8f9fc;
-}
-
-.topbar .navbar-search .input-group-append {
-    margin-left: -1px;
-}
-
-.topbar .navbar-search .input-group-append .btn {
-    border-radius: 0 10rem 10rem 0;
-    padding: 0.375rem 0.75rem;
-    background-color: #4e73df;
-    color: #fff;
-    border: 1px solid #4e73df;
-}
-
-.topbar .navbar-search .input-group-append .btn:hover {
-    background-color: #2e59d9;
-    border-color: #2653d4;
-}
-
-.topbar .navbar-search input {
-  font-size: 0.85rem;
-  height: auto;
-}
-
 .topbar .topbar-divider {
   width: 0;
   border-right: 1px solid #e3e6f0;
   height: calc(4.375rem - 2rem);
   margin: auto 1rem;
 }
-
 .topbar .nav-item .nav-link {
   height: 4.375rem;
   display: flex;
@@ -1112,33 +1158,27 @@ a:focus {
   color: #d1d3e2;
   position: relative;
 }
-
 .topbar .nav-item .nav-link:hover {
   color: #b7b9cc;
 }
-
 .topbar .nav-item .nav-link .img-profile {
   height: 2rem;
   width: 2rem;
   border-radius: 50%;
 }
-
 .topbar .dropdown {
   position: relative;
 }
-
 .topbar .dropdown-menu {
-    right: 0;
-    left: auto;
-    min-width: 18rem;
+  right: 0;
+  left: auto;
+  min-width: 18rem;
 }
-
 .topbar .dropdown-list {
   padding: 0;
   border: none;
   overflow: hidden;
 }
-
 .topbar .dropdown-list .dropdown-header {
   background-color: #4e73df;
   border: 1px solid #4e73df;
@@ -1146,7 +1186,6 @@ a:focus {
   padding-bottom: 0.75rem;
   color: #fff;
 }
-
 .topbar .dropdown-list .dropdown-item {
   white-space: normal;
   padding-top: 0.5rem;
@@ -1156,19 +1195,16 @@ a:focus {
   border-bottom: 1px solid #e3e6f0;
   line-height: 1.3rem;
 }
-
 .topbar .dropdown-list .dropdown-item .dropdown-list-image {
   position: relative;
   height: 2.5rem;
   width: 2.5rem;
 }
-
 .topbar .dropdown-list .dropdown-item .dropdown-list-image img {
   height: 2.5rem;
   width: 2.5rem;
   border-radius: 50%;
 }
-
 .topbar .dropdown-list .dropdown-item .dropdown-list-image .status-indicator {
   background-color: #eaecf4;
   height: 0.75rem;
@@ -1179,15 +1215,12 @@ a:focus {
   right: 0;
   border: 0.125rem solid #fff;
 }
-
 .topbar .dropdown-list .dropdown-item .status-indicator.bg-success {
   background-color: #1cc88a !important;
 }
-
 .topbar .dropdown-list .dropdown-item .status-indicator.bg-warning {
   background-color: #f6c23e !important;
 }
-
 .badge-counter {
   position: absolute;
   transform: scale(0.7);
@@ -1197,65 +1230,58 @@ a:focus {
 }
 
 .d-sm-flex {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    flex-wrap: wrap;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap;
 }
-
 .d-sm-flex .h3 {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
-
 .d-sm-flex .btn {
-    flex-shrink: 0;
-    margin-left: 1rem;
-    color: #fff;
-    background-color: #4e73df;
-    border-color: #4e73df;
+  flex-shrink: 0;
+  margin-left: 1rem;
+  color: #fff;
+  background-color: #4e73df;
+  border-color: #4e73df;
 }
-
 .d-sm-flex .btn :hover {
-    color: #fffb !important;
-    background-color: #07153f;
-    border-color: #4e73df;
+  color: #fffb !important;
+  background-color: #07153f;
+  border-color: #4e73df;
 }
 
 @media (max-width: 576px) {
-    .d-sm-flex {
-        flex-direction: column;
-        align-items: flex-start !important;
-        gap: 0.75rem;
-    }
-    
-    .d-sm-flex .btn {
-        margin-left: 0;
-        width: 100%;
-    }
-}
-
-/* FOOTER */
-footer.sticky-footer {
-    margin-top: auto;
+  .d-sm-flex {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+  .d-sm-flex .btn {
+    margin-left: 0;
     width: 100%;
-    height: 36px;
-    min-height: 36px;
-    padding: 8px 0;
-    background:#002a66;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+  }
 }
 
+footer.sticky-footer {
+  margin-top: auto;
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 8px 0;
+  background: #002a66;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 footer.sticky-footer .copyright {
-    margin: 0;
-    font-size: 12px;
-    line-height: 1;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1;
 }
 
-/* RESPONSIVE */
 @media (min-width: 576px) {
   .topbar .dropdown {
     position: relative;
@@ -1287,229 +1313,193 @@ footer.sticky-footer .copyright {
   align-items: center;
   justify-content: center;
 }
-
 .btn-circle.btn-sm {
   height: 1.8rem;
   width: 1.8rem;
   font-size: 0.75rem;
 }
 
-.btn-google {
-  color: #fff;
-  background-color: #ea4335;
-  border-color: #fff;
-}
-
-.btn-google:hover {
-  color: #fff;
-  background-color: #e12717;
-  border-color: #e6e6e6;
-}
-
-.btn-facebook {
-  color: #fff;
-  background-color: #3b5998;
-  border-color: #fff;
-}
-
-.btn-facebook:hover {
-  color: #fff;
-  background-color: #30497c;
-  border-color: #e6e6e6;
-}
-
-form.user .form-control-user {
-  font-size: 0.8rem;
-  border-radius: 10rem;
-  padding: 1.5rem 1rem;
-}
-
-form.user .btn-user {
-  font-size: 0.8rem;
-  border-radius: 10rem;
-  padding: 0.75rem 1rem;
-}
-
-.bg-login-image {
-  background: url(img/company_login.png);
-  background-position: center;
-  background-size: cover;
-}
-
-.bg-register-image {
-  background: url(img/company_register.png);
-  background-position: center;
-  background-size: cover;
-}
-
-.bg-password-image {
-  background: url(img/company_password.png);
-  background-position: center;
-  background-size: cover;
-}
-
-.card .card-header[data-toggle="collapse"] {
-  text-decoration: none;
-  position: relative;
-  padding: 0.75rem 3.25rem 0.75rem 1.25rem;
-}
-
-.card .card-header[data-toggle="collapse"]::after {
-  position: absolute;
-  right: 0;
-  top: 0;
-  padding-right: 1.725rem;
-  line-height: 51px;
-  font-weight: 900;
-  content: '\f107';
-  font-family: 'Font Awesome 5 Free';
-  color: #d1d3e2;
-}
-
-.card .card-header[data-toggle="collapse"].collapsed::after {
-  content: '\f105';
-}
-
 /* ===== SIDEBAR FIX ===== */
 #sidebar-container {
-    display: flex;
-    flex-shrink: 0;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-    align-self: flex-start;
+  display: flex;
+  flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
 }
-
 .sidebar {
-    position: relative !important;
-    height: 100vh !important;
-    min-height: 100vh !important;
-    width: 6.5rem !important;
-    flex-shrink: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
+  position: relative !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  width: 6.5rem !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
-
 #wrapper {
-    display: flex !important;
-    align-items: flex-start !important;
+  display: flex !important;
+  align-items: flex-start !important;
 }
-
 #wrapper #content-wrapper {
-    flex: 1 1 auto !important;
-    width: auto !important;
-    min-width: 0 !important;
-    overflow-x: hidden !important;
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
 }
 
 @media (min-width: 768px) {
-    .sidebar {
-        width: 14rem !important;
-    }
+  .sidebar {
+    width: 14rem !important;
+  }
 }
 
 @media (max-width: 768px) {
-    #sidebar-container {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        height: 100vh !important;
-        z-index: 1050 !important;
-        width: 0 !important;
-        overflow: hidden !important;
-        transition: width 0.3s ease !important;
-        align-self: auto !important;
-    }
-    
-    #sidebar-container.toggled {
-        width: 14rem !important;
-    }
-    
-    .sidebar {
-        width: 100% !important;
-        height: 100vh !important;
-        position: relative !important;
-    }
-}
-
-/* Ensure charts are visible and full width */
-.chart-area {
-    position: relative;
-    height: 300px;
-    width: 100%;
-}
-
-.chart-pie {
-    position: relative;
-    height: 300px;
-    width: 100%;
-}
-
-.chart-area canvas,
-.chart-pie canvas {
+  #sidebar-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 1050 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    transition: width 0.3s ease !important;
+    align-self: auto !important;
+  }
+  #sidebar-container.toggled {
+    width: 14rem !important;
+  }
+  .sidebar {
     width: 100% !important;
-    height: 100% !important;
-    max-height: 100%;
+    height: 100vh !important;
+    position: relative !important;
+  }
 }
 
 /* Make container push footer down */
 #content {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
-
 .container-fluid {
-    flex: 1 0 auto;
+  flex: 1 0 auto;
 }
 
-/* ===== CUSTOM STYLES FOR CLIENTS PAGE ===== */
-.action-buttons {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+/* ===== CUSTOM STYLES FOR GENERATE QUOTE PAGE ===== */
+.client-info {
+  background: #f0f4ff;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #4e73df;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.client-info strong { color: #1e3c72; }
+.client-info a { color: #4e73df; text-decoration: none; }
+.client-info a:hover { text-decoration: underline; }
+
+.service-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e3e6f0;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  background: #fff;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.service-item:hover { background: #f8f9fc; border-color: #4e73df; }
+.service-item input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.service-item .service-info { flex: 1; min-width: 150px; }
+.service-item .service-info .name { font-weight: 600; color: #1e3c72; }
+.service-item .service-info .desc { font-size: 0.85rem; color: #858796; margin-top: 2px; }
+.service-item .service-price { font-weight: 700; color: #1e3c72; margin-right: 0.5rem; white-space: nowrap; }
+.service-item .service-monthly { font-size: 0.8rem; color: #36b9cc; margin-right: 0.5rem; white-space: nowrap; }
+.service-item .qty-input {
+  width: 60px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #d1d3e2;
+  border-radius: 0.35rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+.service-item .months-input {
+  width: 70px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #d1d3e2;
+  border-radius: 0.35rem;
+  text-align: center;
+  font-size: 0.9rem;
+  display: none;
+}
+.service-item .months-input.show { display: inline-block; }
+.service-item.selected { background: #f0f4ff; border-color: #4e73df; box-shadow: 0 0 0 2px rgba(78, 115, 223, 0.1); }
+.service-item .subscription-badge {
+  font-size: 0.65rem;
+  background: #36b9cc;
+  color: #fff;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  margin-left: 0.5rem;
 }
 
-.btn-warning {
-    color: #fff;
-    background-color: #f6c23e;
-    border-color: #f6c23e;
+.select-all {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background: #f8f9fc;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.select-all input[type="checkbox"] { width: 1.2rem; height: 1.2rem; cursor: pointer; }
+.select-all label { font-weight: 600; cursor: pointer; color: #1e3c72; }
+.select-all .count { color: #858796; font-size: 0.85rem; margin-left: auto; }
+
+.category-header {
+  font-weight: 700;
+  color: #4e73df;
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+  border-bottom: 2px solid #e3e6f0;
 }
 
-.btn-warning:hover {
-    color: #fff;
-    background-color: #dda20a;
-    border-color: #d39a0a;
+.summary-box {
+  background: #f8f9fc;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  margin-top: 1.5rem;
+  border: 2px dashed #d1d3e2;
+}
+.summary-box .total { font-size: 1.3rem; font-weight: 800; color: #1e3c72; }
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e3e6f0;
+  flex-wrap: wrap;
 }
 
-.btn-danger {
-    color: #fff;
-    background-color: #e74a3b;
-    border-color: #e74a3b;
-}
+.error-messages { background: #fee2e2; color: #dc2626; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+.error-messages ul { padding-left: 1.5rem; }
 
-.btn-danger:hover {
-    color: #fff;
-    background-color: #c0392b;
-    border-color: #b93a2d;
-}
-
-.btn-info {
-    color: #fff;
-    background-color: #36b9cc;
-    border-color: #36b9cc;
-}
-
-.btn-info:hover {
-    color: #fff;
-    background-color: #2c9faf;
-    border-color: #2a96a5;
-}
-
-.badge-active { background: #dcfce7; color: #16a34a; }
-.badge-inactive { background: #fee2e2; color: #dc2626; }
-.badge-pending { background: #fef3c7; color: #d97706; }
-.badge-suspended { background: #f3f4f6; color: #6b7280; }
+.btn-success:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 </style>
 </head>
 <body id="page-top">
@@ -1529,6 +1519,9 @@ form.user .btn-user {
                         <i class="fa fa-bars"></i>
                     </button>
 
+                    <h1 class="h3 mb-0 text-gray-800">
+                            <i class="fas fa-plus-circle" style="color:#1cc88a;"></i> Create Quote
+                        </h1>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -1587,7 +1580,7 @@ form.user .btn-user {
                                 <h6 class="dropdown-header">Message Center</h6>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg" alt="...">
+                                        <img class="rounded-circle" src="../../img/undraw_profile_1.svg" alt="...">
                                         <div class="status-indicator bg-success"></div>
                                     </div>
                                     <div class="font-weight-bold">
@@ -1597,7 +1590,7 @@ form.user .btn-user {
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg" alt="...">
+                                        <img class="rounded-circle" src="../../img/undraw_profile_2.svg" alt="...">
                                         <div class="status-indicator"></div>
                                     </div>
                                     <div>
@@ -1607,7 +1600,7 @@ form.user .btn-user {
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg" alt="...">
+                                        <img class="rounded-circle" src="../../img/undraw_profile_3.svg" alt="...">
                                         <div class="status-indicator bg-warning"></div>
                                     </div>
                                     <div>
@@ -1627,7 +1620,7 @@ form.user .btn-user {
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">
                                     <?php echo htmlspecialchars($first_name); ?>
                                 </span>
-                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+                                <img class="img-profile rounded-circle" src="../../img/undraw_profile.svg">
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="#">
@@ -1643,7 +1636,7 @@ form.user .btn-user {
                                     Activity Log
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="logout.php">
+                                <a class="dropdown-item" href="../../logout.php">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
@@ -1657,146 +1650,108 @@ form.user .btn-user {
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">
-                            <i class="fas fa-users"></i> Clients
-                        </h1>
-                        <a href="client-add.php" class="btn btn-sm btn-success shadow-sm">
-                            <i class="fas fa-plus fa-sm text-white-50"></i> Add Client
+                        
+                        <a href="../clients.php?id=<?php echo $client_id; ?>" class="btn btn-sm btn-secondary shadow-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Clients
                         </a>
                     </div>
 
-                    <!-- Stats Cards -->
-                    <div class="row">
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Clients</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $total_clients; ?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-users fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-success shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Active</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $active_clients; ?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-warning shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $pending_clients; ?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-clock fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-danger shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Inactive</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $inactive_clients; ?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-times-circle fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Clients Table -->
+                    <!-- Content Row -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">All Clients</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Select Services for <?php echo htmlspecialchars($client['company_name']); ?></h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered" width="100%" cellspacing="0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Client Code</th>
-                                                    <th>Company</th>
-                                                    <th>Contact</th>
-                                                    <th>Email</th>
-                                                    <th>Phone</th>
-                                                    <th>Industry</th>
-                                                    <th>Status</th>
-                                                    <th>Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php if (empty($clients)): ?>
-                                                <tr>
-                                                    <td colspan="8" class="text-center text-muted">
-                                                        No clients found. <a href="client-add.php">Add your first client</a>
-                                                    </td>
-                                                </tr>
-                                                <?php else: ?>
-                                                <?php foreach ($clients as $client): ?>
-                                                <tr>
-                                                    <td><?php echo htmlspecialchars($client['client_code']); ?></td>
-                                                    <td><strong><?php echo htmlspecialchars($client['company_name']); ?></strong></td>
-                                                    <td><?php echo htmlspecialchars($client['contact_person'] ?? 'N/A'); ?></td>
-                                                    <td><a href="mailto:<?php echo htmlspecialchars($client['email']); ?>"><?php echo htmlspecialchars($client['email']); ?></a></td>
-                                                    <td><?php echo htmlspecialchars($client['phone'] ?? 'N/A'); ?></td>
-                                                    <td><?php echo htmlspecialchars($client['industry'] ?? 'N/A'); ?></td>
-                                                    <td>
-                                                        <span class="badge badge-<?php echo $client['status']; ?>">
-                                                            <?php echo ucfirst($client['status']); ?>
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <div class="action-buttons">
-                                                            <a href="client-view.php?id=<?php echo $client['id']; ?>" class="btn btn-sm btn-primary" title="View">
-                                                                <i class="fas fa-eye"></i>
-                                                            </a>
-                                                            <a href="client-edit.php?id=<?php echo $client['id']; ?>" class="btn btn-sm btn-warning" title="Edit">
-                                                                <i class="fas fa-edit"></i>
-                                                            </a>
-                                                            <a href="generate-quote.php?client_id=<?php echo $client['id']; ?>" class="btn btn-sm btn-success" title="Create Quote">
-                                                                <i class="fas fa-file-invoice"></i>
-                                                            </a>
-                                                            <a href="client-quote.php?id=<?php echo $client['id']; ?>" class="btn btn-sm btn-info" title="View Quotes">
-                                                                <i class="fas fa-list"></i>
-                                                            </a>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                <?php endforeach; ?>
-                                                <?php endif; ?>
-                                            </tbody>
-                                        </table>
+                                    <!-- Client Info -->
+                                    <div class="client-info">
+                                        <div>
+                                            <strong><i class="fas fa-user"></i> Client:</strong> 
+                                            <?php echo htmlspecialchars($client['company_name']); ?> 
+                                            (<?php echo htmlspecialchars($client['contact_person']); ?>)
+                                        </div>
+                                        
                                     </div>
+                                    
+                                    <?php if (!empty($errors)): ?>
+                                    <div class="error-messages">
+                                        <ul>
+                                            <?php foreach ($errors as $error): ?>
+                                            <li><i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </div>
+                                    <?php endif; ?>
+                                    
+                                    <form method="POST" id="quoteForm">
+                                        <!-- Select All -->
+                                        <div class="select-all">
+                                            <input type="checkbox" id="selectAll" onclick="toggleAll(this)">
+                                            <label for="selectAll"><i class="fas fa-check-double"></i> Select All Services</label>
+                                            <span class="count">
+                                                <span id="selectedCount">0</span> of <?php echo count($services); ?> selected
+                                            </span>
+                                        </div>
+                                        
+                                        <!-- Services List by Category -->
+                                        <div id="servicesList">
+                                            <?php foreach ($categories as $category => $category_services): ?>
+                                            <div class="category-header"><?php echo htmlspecialchars($category); ?></div>
+                                            <?php foreach ($category_services as $service): ?>
+                                            <div class="service-item" onclick="toggleCheckbox(<?php echo $service['id']; ?>)">
+                                                <input type="checkbox" name="services[]" value="<?php echo $service['id']; ?>" 
+                                                       id="service_<?php echo $service['id']; ?>" 
+                                                       onchange="updateSummary()">
+                                                <div class="service-info">
+                                                    <div class="name">
+                                                        <?php echo htmlspecialchars($service['service_name']); ?>
+                                                        <?php if ($service['monthly_subscription'] > 0): ?>
+                                                        <span class="subscription-badge"><i class="fas fa-clock"></i> Monthly</span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <div class="desc"><?php echo htmlspecialchars($service['description']); ?></div>
+                                                </div>
+                                                <div class="service-price">R <?php echo number_format($service['price'], 2); ?></div>
+                                                <?php if ($service['monthly_subscription'] > 0): ?>
+                                                <div class="service-monthly"><i class="fas fa-calendar-alt"></i> R <?php echo number_format($service['monthly_subscription'], 2); ?>/mo</div>
+                                                <?php endif; ?>
+                                                <!-- QUANTITY INPUT -->
+                                                <input type="number" class="qty-input" name="quantities[<?php echo $service['id']; ?>]" 
+                                                       value="1" min="1" max="999" onchange="updateSummary()" onclick="event.stopPropagation();">
+                                                <?php if ($service['monthly_subscription'] > 0): ?>
+                                                <input type="number" class="months-input show" name="subscription_months[<?php echo $service['id']; ?>]" 
+                                                       value="12" min="1" max="60" onchange="updateSummary()" onclick="event.stopPropagation();" placeholder="Months">
+                                                <?php endif; ?>
+                                            </div>
+                                            <?php endforeach; ?>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        
+                                        <!-- Summary -->
+                                        <div class="summary-box" id="summaryBox">
+                                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                                                <span>
+                                                    <i class="fas fa-check-circle" style="color:#1cc88a;"></i>
+                                                    <strong>Selected Services:</strong> <span id="selectedCount2">0</span>
+                                                </span>
+                                                <span>
+                                                    <strong>Total Amount:</strong> 
+                                                    <span class="total" id="totalAmount">R 0.00</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Actions -->
+                                        <div class="actions">
+                                            <button type="submit" class="btn btn-success" id="createQuoteBtn" disabled>
+                                                <i class="fas fa-file-invoice"></i> Create Quote
+                                            </button>
+                                            <a href="../client-quote.php?id=<?php echo $client_id; ?>" class="btn btn-secondary">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </a>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -1823,19 +1778,19 @@ form.user .btn-user {
     </a>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="../../vendor/jquery-easing/jquery.easing.min.js"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
+    <script src="../../js/sb-admin-2.min.js"></script>
 
     <script>
     // Load sidebar from external file
     $(function() {
-        $("#sidebar-container").load("sidebar.html", function() {
+        $("#sidebar-container").load("../../sidebar.html", function() {
             console.log("Sidebar loaded successfully");
             
             // Fix sidebar toggle for mobile - toggle the container
@@ -1856,6 +1811,71 @@ form.user .btn-user {
             });
         });
     });
+
+    const services = <?php echo json_encode($services); ?>;
+    
+    function toggleCheckbox(id) {
+        const checkbox = document.getElementById('service_' + id);
+        checkbox.checked = !checkbox.checked;
+        updateSummary();
+        const item = checkbox.closest('.service-item');
+        if (checkbox.checked) {
+            item.classList.add('selected');
+        } else {
+            item.classList.remove('selected');
+        }
+    }
+    
+    function toggleAll(master) {
+        const checkboxes = document.querySelectorAll('input[name="services[]"]');
+        checkboxes.forEach(cb => {
+            cb.checked = master.checked;
+            const item = cb.closest('.service-item');
+            if (cb.checked) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+        updateSummary();
+    }
+    
+    function updateSummary() {
+        const checkboxes = document.querySelectorAll('input[name="services[]"]:checked');
+        const count = checkboxes.length;
+        let total = 0;
+        
+        checkboxes.forEach(cb => {
+            const id = cb.value;
+            const qtyInput = document.querySelector('input[name="quantities[' + id + ']"]');
+            const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+            const service = services.find(s => s.id == id);
+            if (service) {
+                let price = service.price;
+                // Check if subscription with months
+                const monthsInput = document.querySelector('input[name="subscription_months[' + id + ']"]');
+                if (monthsInput && service.monthly_subscription > 0) {
+                    const months = parseInt(monthsInput.value) || 12;
+                    price = service.monthly_subscription * months;
+                }
+                total += price * qty;
+            }
+        });
+        
+        document.getElementById('selectedCount').textContent = count;
+        document.getElementById('selectedCount2').textContent = count;
+        document.getElementById('totalAmount').textContent = 'R ' + total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        
+        const btn = document.getElementById('createQuoteBtn');
+        btn.disabled = count === 0;
+        if (count === 0) {
+            btn.innerHTML = '<i class="fas fa-file-invoice"></i> Select at least one service';
+        } else {
+            btn.innerHTML = '<i class="fas fa-file-invoice"></i> Create Quote (R ' + total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ')';
+        }
+    }
+    
+    updateSummary();
     </script>
 </body>
 </html>

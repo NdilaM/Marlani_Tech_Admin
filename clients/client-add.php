@@ -4,12 +4,12 @@ session_start();
 
 // Check if user is logged in
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header('Location: login.html');
+    header('Location: ../login.html');
     exit();
 }
 
 // Include database connection
-require_once 'db.php';
+require_once '../db.php';
 
 // Get user data from session
 $first_name = $_SESSION['first_name'] ?? 'User';
@@ -95,8 +95,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Marlani Admin - Add Client</title>
 
     <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="../css/sb-admin-2.min.css" rel="stylesheet">
 
 <style>
 /* ===== ALL CSS FROM VIEW-QUOTE.PHP ===== */
@@ -1107,48 +1110,6 @@ a:focus {
   height: 4.375rem;
 }
 
-.topbar .navbar-search {
-    width: 25rem;
-}
-
-.topbar .navbar-search .input-group {
-    position: relative;
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    width: 100%;
-}
-
-.topbar .navbar-search .form-control {
-    font-size: 0.85rem;
-    height: auto;
-    padding-right: 3rem;
-    border-radius: 10rem 0 0 10rem;
-    border: 1px solid #d1d3e2;
-    background-color: #f8f9fc;
-}
-
-.topbar .navbar-search .input-group-append {
-    margin-left: -1px;
-}
-
-.topbar .navbar-search .input-group-append .btn {
-    border-radius: 0 10rem 10rem 0;
-    padding: 0.375rem 0.75rem;
-    background-color: #4e73df;
-    color: #fff;
-    border: 1px solid #4e73df;
-}
-
-.topbar .navbar-search .input-group-append .btn:hover {
-    background-color: #2e59d9;
-    border-color: #2653d4;
-}
-
-.topbar .navbar-search input {
-  font-size: 0.85rem;
-  height: auto;
-}
 
 .topbar .topbar-divider {
   width: 0;
@@ -1384,19 +1345,19 @@ form.user .btn-user {
 }
 
 .bg-login-image {
-  background: url(img/company_login.png);
+  background: url(../img/company_login.png);
   background-position: center;
   background-size: cover;
 }
 
 .bg-register-image {
-  background: url(img/company_register.png);
+  background: url(../img/company_register.png);
   background-position: center;
   background-size: cover;
 }
 
 .bg-password-image {
-  background: url(img/company_password.png);
+  background: url(../img/company_password.png);
   background-position: center;
   background-size: cover;
 }
@@ -1563,17 +1524,9 @@ form.user .btn-user {
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <!-- Topbar Search -->
-                    <form class="form-inline mr-auto ml-3 navbar-search">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                  <h1 class="h3 mb-0 text-gray-800">
+                            <i class="fas fa-user-plus"></i> Add New Client
+                        </h1>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -1632,7 +1585,7 @@ form.user .btn-user {
                                 <h6 class="dropdown-header">Message Center</h6>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg" alt="...">
+                                        <img class="rounded-circle" src="../img/undraw_profile_1.svg" alt="...">
                                         <div class="status-indicator bg-success"></div>
                                     </div>
                                     <div class="font-weight-bold">
@@ -1642,7 +1595,7 @@ form.user .btn-user {
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg" alt="...">
+                                        <img class="rounded-circle" src="../img/undraw_profile_2.svg" alt="...">
                                         <div class="status-indicator"></div>
                                     </div>
                                     <div>
@@ -1652,7 +1605,7 @@ form.user .btn-user {
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg" alt="...">
+                                        <img class="rounded-circle" src="../img/undraw_profile_3.svg" alt="...">
                                         <div class="status-indicator bg-warning"></div>
                                     </div>
                                     <div>
@@ -1672,7 +1625,7 @@ form.user .btn-user {
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">
                                     <?php echo htmlspecialchars($first_name); ?>
                                 </span>
-                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+                                <img class="img-profile rounded-circle" src="../img/undraw_profile.svg">
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="#">
@@ -1688,7 +1641,7 @@ form.user .btn-user {
                                     Activity Log
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="logout.php">
+                                <a class="dropdown-item" href="../logout.php">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
@@ -1702,10 +1655,7 @@ form.user .btn-user {
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">
-                            <i class="fas fa-user-plus"></i> Add New Client
-                        </h1>
-                        <a href="clients.php" class="btn btn-sm btn-secondary shadow-sm">
+                       <a href="clients.php" class="btn btn-sm btn-secondary shadow-sm">
                             <i class="fas fa-arrow-left"></i> Back to Clients
                         </a>
                     </div>
@@ -1851,19 +1801,19 @@ form.user .btn-user {
     </a>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../vendor/jquery/jquery.min.js"></script>
+    <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="../vendor/jquery-easing/jquery.easing.min.js"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
+    <script src="../js/sb-admin-2.min.js"></script>
 
     <script>
     // Load sidebar from external file
     $(function() {
-        $("#sidebar-container").load("sidebar.html", function() {
+        $("#sidebar-container").load("../sidebar.html", function() {
             console.log("Sidebar loaded successfully");
             
             // Fix sidebar toggle for mobile - toggle the container
