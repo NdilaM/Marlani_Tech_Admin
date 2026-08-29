@@ -83,13 +83,14 @@ foreach ($items as $item) {
     }
 }
 
-// Logo path
+// Logo path - keep original logo with transparency
 $logo_path = 'img/company_logo.png';
 $logo_html = '';
 if (file_exists($logo_path)) {
-    $logo_html = '<img src="' . $logo_path . '" alt="Company Logo" style="height:60px; width:auto; max-height:60px;">';
+    // Use the logo with white text version for dark background
+    $logo_html = '<img src="' . $logo_path . '" alt="Company Logo" class="header-logo">';
 } else {
-    $logo_html = '<h1 style="margin:0; color:#1e3c72; font-size:28px;">' . ($settings['company_name'] ?? 'Marlani Technologies') . '</h1>';
+    $logo_html = '<h1 style="margin:0; color:#fff; font-size:28px;">' . ($settings['company_name'] ?? 'Marlani Technologies') . '</h1>';
 }
 ?>
 <!DOCTYPE html>
@@ -106,421 +107,1069 @@ if (file_exists($logo_path)) {
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
 
-<style>
-/* ===== ALL CSS FROM VIEW-QUOTE.PHP ===== */
-:root {
-  --blue: #002a66;
-  --indigo: #6610f2;
-  --purple: #6f42c1;
-  --pink: #e83e8c;
-  --red: #e74a3b;
-  --orange: #fd7e14;
-  --yellow: #f6c23e;
-  --green: #1cc88a;
-  --teal: #20c9a6;
-  --cyan: #36b9cc;
-  --white: #fff;
-  --gray: #858796;
-  --gray-dark: #5a5c69;
-  --primary: #4e73df;
-  --secondary: #858796;
-  --success: #1cc88a;
-  --info: #36b9cc;
-  --warning: #f6c23e;
-  --danger: #e74a3b;
-  --light: #f8f9fc;
-  --dark: #5a5c69;
-  --breakpoint-xs: 0;
-  --breakpoint-sm: 576px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 992px;
-  --breakpoint-xl: 1200px;
-  --font-family-sans-serif: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
+    <!-- Custom styles for this template-->
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
 
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+    <style>
+        /* ===== SIDEBAR LOADING FIXES - ORIGINAL STYLE ===== */
+        #sidebar-container {
+            min-height: 100vh;
+        }
 
-html {
-  font-family: sans-serif;
-  line-height: 1.15;
-  -webkit-text-size-adjust: 100%;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-}
+        #sidebar-container .sidebar {
+            min-height: 100vh;
+        }
 
-body {
-  margin: 0;
-  font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #858796;
-  text-align: left;
-  background-color: #fff;
-}
+        #sidebar-container .sidebar .nav-item .collapse .collapse-inner {
+            background: transparent !important;
+        }
 
-/* ===== SB ADMIN 2 CUSTOM STYLES ===== */
-/* (Include all your existing CSS styles here - same as before) */
-/* I'm including just the essential custom styles to keep it concise */
+        #sidebar-container .sidebar .nav-item .collapse .collapse-inner .collapse-item {
+            color: rgba(255,255,255,0.7) !important;
+        }
 
-.quote-container {
-  background: #fff;
-  border-radius: 0.75rem;
-  padding: 2rem;
-}
+        #sidebar-container .sidebar .nav-item .collapse .collapse-inner .collapse-item:hover {
+            background: rgba(255,255,255,0.08) !important;
+            color: #fff !important;
+        }
 
-.quote-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 3px solid #1e3c72;
-  padding-bottom: 1.5rem;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-.header-left { display: flex; align-items: center; gap: 1rem; }
-.header-left .logo { height: 60px; width: auto; max-height: 60px; }
-.header-left .company-name { font-size: 1.8rem; font-weight: 800; color: #1e3c72; }
-.header-left .company-name span { color: #4e73df; }
-.header-left .tagline { font-size: 0.7rem; color: #888; letter-spacing: 2px; text-transform: uppercase; }
-.header-right { text-align: right; }
-.header-right .quote-badge { background: #4e73df; color: #fff; padding: 0.5rem 1.5rem; border-radius: 50px; font-size: 0.9rem; font-weight: 700; letter-spacing: 2px; display: inline-block; }
-.header-right .company-details { font-size: 0.75rem; color: #888; margin-top: 0.5rem; line-height: 1.4; }
+        #sidebar-container .sidebar .nav-item .collapse .collapse-inner .collapse-item.active {
+            background: rgba(255,255,255,0.15) !important;
+            color: #fff !important;
+        }
 
-.status-badge { display: inline-block; padding: 0.5rem 1.5rem; border-radius: 999px; font-weight: 700; font-size: 0.9rem; }
-.status-draft { background: #fef3c7; color: #d97706; }
-.status-sent { background: #dbeafe; color: #2563eb; }
-.status-accepted { background: #dcfce7; color: #16a34a; }
-.status-rejected { background: #fee2e2; color: #dc2626; }
+        #sidebar-container .sidebar .nav-item .collapse .collapse-inner .collapse-header {
+            color: rgba(255,255,255,0.4) !important;
+            border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+        }
 
-.info-bar {
-  background: #f8f9fc;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  margin-bottom: 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.info-bar .item { font-size: 0.85rem; color: #555; }
-.info-bar .item strong { color: #1e3c72; }
+        /* ===== SIDEBAR OVERLAY FIX ===== */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+            display: none;
+        }
 
-.billing-section { display: flex; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-.billing-box { flex: 1; min-width: 200px; }
-.billing-box h4 { color: #4e73df; border-bottom: 2px solid #e3e6f0; padding-bottom: 0.5rem; margin-bottom: 0.75rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
-.billing-box .client-name { font-size: 1.2rem; font-weight: 700; color: #1e3c72; }
-.billing-box p { margin: 0.25rem 0; font-size: 0.9rem; color: #555; }
-.billing-box.text-right { text-align: right; }
+        .sidebar-overlay.active {
+            display: block;
+        }
 
-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
-th { background: #1e3c72; color: #fff; padding: 0.75rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
-td { padding: 0.75rem; border-bottom: 1px solid #e3e6f0; font-size: 0.9rem; }
-.text-right { text-align: right; }
-.text-center { text-align: center; }
-.item-name { font-weight: 600; color: #1e3c72; }
-.item-desc { font-size: 0.8rem; color: #888; }
+        /* ===== PAGE LAYOUT - FILL PAGE ===== */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fc;
+        }
 
-.totals-section { 
-  text-align: right; 
-  margin-top: 1.5rem; 
-  padding-top: 1.5rem; 
-  border-top: 2px solid #e3e6f0; 
-}
-.totals-section p { margin: 0.25rem 0; font-size: 1rem; }
-.grand-total { 
-  font-size: 1.3rem; 
-  color: #1e3c72; 
-  font-weight: 800; 
-}
-.subscription-total { 
-  font-size: 1.1rem; 
-  color: #36b9cc; 
-  font-weight: 700; 
-}
-.one-time-total { 
-  font-size: 1.1rem; 
-  color: #4e73df; 
-  font-weight: 700; 
-}
+        #wrapper {
+            display: flex;
+            min-height: 100vh;
+            height: 100%;
+        }
 
-.section-title {
-  font-size: 1rem;
-  font-weight: 700;
-  margin: 1.5rem 0 0.5rem 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid #e3e6f0;
-}
-.section-title.one-time { color: #4e73df; border-color: #4e73df; }
-.section-title.subscription { color: #36b9cc; border-color: #36b9cc; }
+        #content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            height: 100%;
+        }
 
-.terms { margin-top: 2rem; padding: 1.25rem 1.5rem; background: #f8f9fc; border-radius: 0.5rem; border-left: 4px solid #4e73df; }
-.terms h4 { color: #1e3c72; margin-bottom: 0.5rem; font-size: 0.95rem; }
-.terms ul { list-style: none; padding: 0; margin: 0; }
-.terms ul li { padding: 0.25rem 0; padding-left: 1.5rem; position: relative; font-size: 0.85rem; color: #666; }
-.terms ul li:before { content: "✓"; color: #4e73df; position: absolute; left: 0; font-weight: 700; }
+        #content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
 
-.footer { margin-top: 2rem; text-align: center; border-top: 1px solid #e3e6f0; padding-top: 1.5rem; color: #999; font-size: 0.8rem; }
-.footer .brand { color: #1e3c72; font-weight: 600; }
+        .container-fluid {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0.5rem 1rem;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
 
-@media print { .sidebar, .topbar, .action-bar, .no-print { display: none !important; } }
+        /* ===== QUOTE CARD ===== */
+        .quote-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0 !important;
+            border-radius: 0.5rem !important;
+            width: 100% !important;
+        }
 
-.btn-warning {
-  color: #fff;
-  background-color: #f6c23e;
-  border-color: #f6c23e;
-}
-.btn-warning:hover {
-  color: #fff;
-  background-color: #dda20a;
-  border-color: #d39a0a;
-}
-.btn-info {
-  color: #fff;
-  background-color: #36b9cc;
-  border-color: #36b9cc;
-}
-.btn-info:hover {
-  color: #fff;
-  background-color: #2c9faf;
-  border-color: #2a96a5;
-}
+        .quote-card .card-body {
+            flex: 1;
+            padding: 0 !important;
+            display: flex;
+            flex-direction: column;
+            width: 100% !important;
+        }
 
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
+        .quote-container {
+            flex: 1;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 auto;
+            padding: 0;
+            background: #fff;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-/* Sidebar styles */
-#wrapper { display: flex; min-height: 100vh; }
-#sidebar-container { display: flex; flex-shrink: 0; height: 100vh; position: sticky; top: 0; }
-.sidebar {
-  width: 6.5rem;
-  min-height: 100vh;
-  height: 100vh;
-  position: sticky;
-  top: 0;
-  flex-shrink: 0;
-  z-index: 100;
-  overflow-y: auto;
-  overflow-x: hidden;
-  transition: width 0.3s ease;
-  box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  background: #1e3c72;
-  color: #fff;
-  padding: 1.5rem 1rem;
-}
-.sidebar-brand { font-size: 1.5rem; font-weight: 800; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.5rem; }
-.sidebar-brand i { margin-right: 0.5rem; }
-.sidebar-nav { list-style: none; padding: 0; flex: 1; }
-.sidebar-nav li { margin-bottom: 0.3rem; }
-.sidebar-nav a {
-  display: flex;
-  align-items: center;
-  padding: 0.7rem 1rem;
-  color: rgba(255,255,255,0.7);
-  text-decoration: none;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
-}
-.sidebar-nav a:hover { background: rgba(255,255,255,0.1); color: #fff; }
-.sidebar-nav a i { width: 1.5rem; margin-right: 0.5rem; }
-.sidebar-nav a.active { background: rgba(255,255,255,0.15); color: #fff; font-weight: 600; }
+        /* ===== QUOTE HEADER ===== */
+        .quote-header {
+            background: #003986;
+            padding: 0.8rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 3px solid #4e73df;
+            flex-shrink: 0;
+        }
 
-@media (min-width: 768px) { .sidebar { width: 14rem !important; } }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
 
-@media (max-width: 768px) {
-  .sidebar { width: 4rem !important; padding: 1rem 0.5rem; }
-  .sidebar-brand span, .sidebar-nav a span { display: none; }
-  .sidebar-nav a { justify-content: center; padding: 0.7rem 0.5rem; }
-  .sidebar-nav a i { margin-right: 0; font-size: 1.2rem; }
-  #sidebar-container { position: fixed; top: 0; left: 0; height: 100vh; z-index: 1050; width: 0; overflow: hidden; transition: width 0.3s ease; }
-  #sidebar-container.toggled { width: 14rem; }
-  .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1040; display: none; }
-  .sidebar-overlay.active { display: block; }
-}
+        .header-logo {
+            height: 50px;
+            width: auto;
+            max-width: 180px;
+            object-fit: contain;
+        }
 
-/* Topbar */
-.topbar {
-  height: 4.375rem;
-  background: #fff;
-  padding: 0 1.5rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-#content-wrapper { flex: 1; }
-#content { flex: 1; }
-.container-fluid { padding: 1.5rem; }
-</style>
+        .header-right {
+            text-align: right;
+        }
+
+        .header-right .quote-badge {
+            display: inline-block;
+            padding: 0.35rem 1.2rem;
+            background: #4e73df;
+            color: #fff;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .header-right .company-details {
+            margin-top: 0.2rem;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* ===== INFO BAR ===== */
+        .info-bar {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 0.5rem;
+            padding: 0.5rem 2rem;
+            background: #f8f9fc;
+            border-bottom: 1px solid #e3e6f0;
+            flex-shrink: 0;
+        }
+
+        .info-bar .item {
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .info-bar .item strong {
+            color: #1e3c72;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.7rem;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            line-height: 1.3;
+        }
+
+        .status-draft { background: #fef3c7; color: #d97706; }
+        .status-sent { background: #dbeafe; color: #2563eb; }
+        .status-accepted { background: #dcfce7; color: #16a34a; }
+        .status-rejected { background: #fee2e2; color: #dc2626; }
+
+        /* ===== BILLING - COMPACT ===== */
+        .billing-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding: 0.6rem 2rem;
+            align-items: start;
+            border-bottom: 1px solid #e3e6f0;
+            flex-shrink: 0;
+        }
+
+        .billing-box h4 {
+            margin: 0 0 0.3rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 2px solid #e3e6f0;
+            color: #4e73df;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .billing-box .client-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 0.15rem;
+        }
+
+        .billing-box p {
+            margin: 0.1rem 0;
+            font-size: 0.9rem;
+            line-height: 1.3;
+            color: #555;
+        }
+
+        .billing-box.text-right {
+            text-align: right;
+        }
+
+        /* ===== TABLES ===== */
+        .quote-container table {
+            width: 100%;
+            margin: 0;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .quote-container th {
+            padding: 0.5rem 0.8rem;
+            background: #003986;
+            color: #fff;
+            text-align: left;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            vertical-align: middle;
+        }
+
+        .quote-container td {
+            padding: 0.5rem 0.8rem;
+            border-bottom: 1px solid #e3e6f0;
+            font-size: 0.85rem;
+            line-height: 1.3;
+            vertical-align: top;
+        }
+
+        .quote-container th:nth-child(1),
+        .quote-container td:nth-child(1) { width: 5%; }
+        .quote-container th:nth-child(2),
+        .quote-container td:nth-child(2) { width: 20%; }
+        .quote-container th:nth-child(3),
+        .quote-container td:nth-child(3) { width: 35%; }
+        .quote-container th:nth-child(4),
+        .quote-container td:nth-child(4) { width: 10%; }
+        .quote-container th:nth-child(5),
+        .quote-container td:nth-child(5) { width: 15%; }
+        .quote-container th:nth-child(6),
+        .quote-container td:nth-child(6) { width: 15%; }
+
+        .text-right { text-align: right !important; }
+        .text-center { text-align: center !important; }
+
+        .item-name {
+            font-weight: 700;
+            color: #1e3c72;
+            font-size: 0.9rem;
+        }
+
+        .item-desc {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        /* ===== SECTIONS / TOTALS ===== */
+        .section-title {
+            padding: 0 2rem;
+            margin: 0.6rem 0 0.2rem;
+            padding-bottom: 0.2rem;
+            border-bottom: 2px solid #e3e6f0;
+            font-size: 0.9rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .section-title.one-time {
+            color: #4e73df;
+            border-color: #4e73df;
+        }
+
+        .section-title.subscription {
+            color: #36b9cc;
+            border-color: #36b9cc;
+        }
+
+        .table-wrapper {
+            padding: 0 2rem;
+            overflow-x: auto;
+            flex: 1;
+            width: 100%;
+        }
+
+        .totals-section {
+            padding: 0.5rem 2rem;
+            border-top: 2px solid #e3e6f0;
+            text-align: right;
+            flex-shrink: 0;
+            margin-top: auto;
+        }
+
+        .totals-section p {
+            margin: 0.1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .grand-total {
+            font-size: 1.2rem;
+            color: #1e3c72;
+            font-weight: 800;
+        }
+
+        .subscription-total {
+            font-size: 1.05rem;
+            color: #36b9cc;
+            font-weight: 700;
+        }
+
+        .one-time-total {
+            font-size: 1.05rem;
+            color: #4e73df;
+            font-weight: 700;
+        }
+
+        /* ===== TERMS ===== */
+        .terms {
+            margin: 0 2rem 0.5rem;
+            padding: 0.6rem 1rem;
+            background: #f8f9fc;
+            border-radius: 0.4rem;
+            border-left: 4px solid #4e73df;
+            flex-shrink: 0;
+        }
+
+        .terms h4 {
+            margin: 0 0 0.2rem;
+            color: #1e3c72;
+            font-size: 0.85rem;
+        }
+
+        .terms ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .terms ul li {
+            position: relative;
+            padding: 0.05rem 0 0.05rem 1.2rem;
+            font-size: 0.8rem;
+            line-height: 1.3;
+            color: #666;
+        }
+
+        .terms ul li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4e73df;
+            font-weight: 700;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer-text {
+            padding: 0.4rem 2rem;
+            border-top: 1px solid #e3e6f0;
+            text-align: center;
+            color: #999;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .footer-text p {
+            margin: 0.1rem 0;
+        }
+
+        .footer-text .brand {
+            color: #1e3c72;
+            font-weight: 600;
+        }
+
+        /* Remove the page footer */
+        .sticky-footer {
+            display: none !important;
+        }
+
+        /* ===== BUTTON HOVER FIX ===== */
+        .btn:hover {
+            color: #ffffff !important;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 991.98px) {
+            .container-fluid {
+                padding: 0.5rem;
+            }
+
+            .quote-header {
+                padding: 0.6rem 1.5rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.3rem;
+            }
+
+            .header-right {
+                text-align: left;
+                width: 100%;
+            }
+
+            .info-bar {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                padding: 0.4rem 1.5rem;
+            }
+
+            .billing-section {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                padding: 0.4rem 1.5rem;
+            }
+
+            .billing-box.text-right {
+                text-align: left;
+            }
+
+            .section-title {
+                padding: 0 1.5rem;
+            }
+
+            .table-wrapper {
+                padding: 0 1.5rem;
+            }
+
+            .totals-section {
+                padding: 0.4rem 1.5rem;
+            }
+
+            .terms {
+                margin: 0 1.5rem 0.4rem;
+                padding: 0.4rem 0.8rem;
+            }
+
+            .footer-text {
+                padding: 0.4rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            #sidebar-container {
+                position: fixed !important;
+                top: 0;
+                left: 0;
+                width: 0 !important;
+                min-width: 0 !important;
+                flex-basis: 0 !important;
+                height: 100vh;
+                z-index: 1050;
+                overflow: visible;
+                background: transparent;
+            }
+
+            #sidebar-container .sidebar {
+                width: 280px;
+                height: 100vh;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 1050;
+                overflow-y: auto;
+            }
+
+            #sidebar-container.toggled {
+                width: 280px !important;
+                min-width: 280px !important;
+                flex-basis: 280px !important;
+            }
+
+            #sidebar-container.toggled .sidebar {
+                transform: translateX(0);
+                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+            }
+
+            #content-wrapper {
+                width: 100% !important;
+                margin-left: 0 !important;
+                position: relative;
+                z-index: 1;
+            }
+
+            .topbar {
+                padding: 0 .75rem;
+            }
+
+            .topbar .h3 {
+                font-size: 1rem !important;
+            }
+
+            .navbar-search {
+                display: none !important;
+            }
+
+            .container-fluid {
+                padding: 0.25rem;
+            }
+
+            .d-sm-flex {
+                display: flex !important;
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 0.3rem;
+                padding: 0.15rem 0;
+            }
+
+            .d-sm-flex > div:last-child {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.2rem;
+            }
+
+            .d-sm-flex > div:last-child .btn {
+                flex: 1 1 auto;
+                font-size: 0.6rem;
+                padding: 0.1rem 0.3rem;
+            }
+
+            .quote-container {
+                border-radius: 0.4rem;
+            }
+
+            .quote-header {
+                padding: 0.4rem 0.8rem;
+                gap: 0.2rem;
+            }
+
+            .header-logo {
+                height: 30px;
+                max-width: 80px;
+            }
+
+            .header-right .quote-badge {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.6rem;
+            }
+
+            .header-right .company-details {
+                font-size: 0.6rem;
+            }
+
+            .info-bar {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.15rem;
+                padding: 0.3rem 0.8rem;
+            }
+
+            .info-bar .item {
+                font-size: 0.65rem;
+            }
+
+            .billing-section {
+                padding: 0.3rem 0.8rem;
+                gap: 0.3rem;
+            }
+
+            .billing-box .client-name {
+                font-size: 0.9rem;
+            }
+
+            .billing-box p {
+                font-size: 0.7rem;
+                margin: 0.05rem 0;
+            }
+
+            .billing-box h4 {
+                font-size: 0.65rem;
+                margin-bottom: 0.15rem;
+                padding-bottom: 0.15rem;
+            }
+
+            .section-title {
+                padding: 0 0.8rem;
+                font-size: 0.75rem;
+                margin: 0.4rem 0 0.1rem;
+            }
+
+            .table-wrapper {
+                padding: 0 0.8rem;
+                overflow-x: auto;
+            }
+
+            .quote-container table {
+                font-size: 0.65rem;
+                min-width: 450px;
+            }
+
+            .quote-container th,
+            .quote-container td {
+                padding: 0.25rem 0.4rem;
+                font-size: 0.6rem;
+            }
+
+            .quote-container th {
+                font-size: 0.55rem;
+            }
+
+            .totals-section {
+                padding: 0.3rem 0.8rem;
+            }
+
+            .totals-section p {
+                font-size: 0.7rem;
+                margin: 0.05rem 0;
+            }
+
+            .grand-total {
+                font-size: 0.9rem;
+            }
+
+            .terms {
+                margin: 0 0.8rem 0.3rem;
+                padding: 0.3rem 0.6rem;
+            }
+
+            .terms h4 {
+                font-size: 0.7rem;
+            }
+
+            .terms ul li {
+                font-size: 0.65rem;
+                padding: 0.03rem 0 0.03rem 0.9rem;
+            }
+
+            .footer-text {
+                padding: 0.3rem 0.8rem;
+                font-size: 0.6rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .info-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .header-left {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .header-right {
+                text-align: center;
+            }
+
+            .billing-box .client-name {
+                font-size: 0.8rem;
+            }
+
+            .billing-box p {
+                font-size: 0.65rem;
+            }
+
+            .quote-container th,
+            .quote-container td {
+                padding: 0.15rem 0.25rem;
+                font-size: 0.55rem;
+            }
+
+            .totals-section p {
+                font-size: 0.65rem;
+            }
+
+            .grand-total {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* ===== LAPTOP VIEW - EXPAND HORIZONTALLY ===== */
+        @media (min-width: 1200px) {
+            .container-fluid {
+                padding: 0.5rem 2rem;
+                max-width: 100% !important;
+            }
+
+            .quote-container {
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+
+            .billing-section {
+                gap: 4rem;
+                padding: 0.8rem 2.5rem;
+            }
+
+            .billing-box .client-name {
+                font-size: 1.2rem;
+            }
+
+            .billing-box p {
+                font-size: 1rem;
+            }
+
+            .info-bar {
+                padding: 0.6rem 2.5rem;
+            }
+
+            .info-bar .item {
+                font-size: 0.95rem;
+            }
+
+            .section-title {
+                padding: 0 2.5rem;
+                font-size: 1rem;
+            }
+
+            .table-wrapper {
+                padding: 0 2.5rem;
+            }
+
+            .quote-container th {
+                font-size: 0.85rem;
+                padding: 0.6rem 1rem;
+            }
+
+            .quote-container td {
+                font-size: 0.95rem;
+                padding: 0.6rem 1rem;
+            }
+
+            .item-name {
+                font-size: 1rem;
+            }
+
+            .item-desc {
+                font-size: 0.9rem;
+            }
+
+            .totals-section {
+                padding: 0.6rem 2.5rem;
+            }
+
+            .totals-section p {
+                font-size: 1.05rem;
+            }
+
+            .grand-total {
+                font-size: 1.3rem;
+            }
+
+            .terms {
+                margin: 0 2.5rem 0.5rem;
+                padding: 0.6rem 1.2rem;
+            }
+
+            .terms h4 {
+                font-size: 0.95rem;
+            }
+
+            .terms ul li {
+                font-size: 0.9rem;
+            }
+
+            .footer-text {
+                padding: 0.5rem 2.5rem;
+                font-size: 0.85rem;
+            }
+
+            .quote-header {
+                padding: 1rem 2.5rem;
+            }
+
+            .header-logo {
+                height: 55px;
+            }
+
+            .header-right .quote-badge {
+                font-size: 0.95rem;
+                padding: 0.4rem 1.5rem;
+            }
+
+            .header-right .company-details {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* ===== PRINT ===== */
+        @media print {
+            @page {
+                margin: 0;
+                size: A4;
+            }
+
+            html, body {
+                margin: 0;
+                padding: 0;
+                background: #fff !important;
+                height: 100% !important;
+            }
+
+            #wrapper {
+                height: 100% !important;
+                min-height: 100% !important;
+            }
+
+            .sidebar,
+            #sidebar-container,
+            .topbar,
+            .action-buttons,
+            .no-print,
+            .sticky-footer,
+            .scroll-to-top,
+            .btn,
+            .d-sm-flex > div:last-child,
+            .navbar,
+            .topbar-divider,
+            .nav-item,
+            .dropdown,
+            #userDropdown,
+            .container-fluid > .d-sm-flex,
+            .mb-4 {
+                display: none !important;
+            }
+
+            .container-fluid {
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+
+            .row {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+
+            .col-12 {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                flex: 0 0 100% !important;
+                max-width: 100% !important;
+            }
+
+            .card,
+            .quote-card {
+                margin: 0 !important;
+                padding: 0 !important;
+                border: 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+
+            .card-body {
+                padding: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+
+            .quote-container {
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+
+            .quote-header {
+                background: #003986 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                border-radius: 0 !important;
+                padding: 0.4rem 1rem !important;
+            }
+
+            .header-logo {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                height: 32px !important;
+            }
+
+            .header-right .quote-badge {
+                font-size: 0.65rem !important;
+                padding: 0.15rem 0.6rem !important;
+            }
+
+            .header-right .company-details {
+                font-size: 0.55rem !important;
+            }
+
+            .info-bar {
+                background: #f8f9fc !important;
+                padding: 0.25rem 1rem !important;
+                gap: 0.2rem !important;
+            }
+
+            .info-bar .item {
+                font-size: 0.6rem !important;
+            }
+
+            .billing-section {
+                padding: 0.25rem 1rem !important;
+                gap: 0.5rem !important;
+            }
+
+            .billing-box h4 {
+                font-size: 0.6rem !important;
+            }
+
+            .billing-box .client-name {
+                font-size: 0.85rem !important;
+            }
+
+            .billing-box p {
+                font-size: 0.65rem !important;
+                margin: 0.05rem 0 !important;
+            }
+
+            .section-title {
+                padding: 0 1rem !important;
+                margin: 0.3rem 0 0.05rem !important;
+                font-size: 0.7rem !important;
+            }
+
+            .table-wrapper {
+                padding: 0 1rem !important;
+            }
+
+            .quote-container table {
+                font-size: 0.6rem !important;
+            }
+
+            .quote-container th,
+            .quote-container td {
+                padding: 0.15rem 0.3rem !important;
+                font-size: 0.55rem !important;
+            }
+
+            .quote-container th {
+                font-size: 0.5rem !important;
+                background: #003986 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color: #fff !important;
+            }
+
+            .totals-section {
+                padding: 0.25rem 1rem !important;
+            }
+
+            .totals-section p {
+                font-size: 0.65rem !important;
+                margin: 0.05rem 0 !important;
+            }
+
+            .grand-total {
+                font-size: 0.85rem !important;
+            }
+
+            .terms {
+                margin: 0 1rem 0.25rem !important;
+                padding: 0.25rem 0.6rem !important;
+                background: #f8f9fc !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .terms h4 {
+                font-size: 0.6rem !important;
+            }
+
+            .terms ul li {
+                font-size: 0.55rem !important;
+                padding: 0.03rem 0 0.03rem 0.8rem !important;
+            }
+
+            .footer-text {
+                padding: 0.25rem 1rem !important;
+                font-size: 0.5rem !important;
+            }
+
+            .footer-text p {
+                margin: 0.03rem 0 !important;
+            }
+
+            .quote-header,
+            .billing-section,
+            .terms,
+            table,
+            tr {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
 </head>
 <body id="page-top">
-    <!-- Page Wrapper -->
     <div id="wrapper">
         <!-- Sidebar -->
         <div id="sidebar-container"></div>
 
-        <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
-            <!-- Main Content -->
             <div id="content">
                 <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                    <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <!-- Topbar Search -->
-                    <form class="form-inline mr-auto ml-3 navbar-search">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                    <h1 class="h3 mb-0 text-gray-800" style="font-size:1.25rem;">
+                        <i class="fas fa-file-invoice text-primary"></i> Quote Details
+                    </h1>
 
-                    <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
-                        <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-bell fa-fw"></i>
-                                <span class="badge badge-danger badge-counter">3+</span>
-                            </a>
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">Alerts Center</h6>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-success">
-                                            <i class="fas fa-donate text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 7, 2019</div>
-                                        $290.29 has been deposited into your account!
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-warning">
-                                            <i class="fas fa-exclamation-triangle text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 2, 2019</div>
-                                        Spending Alert: We've noticed unusually high spending for your account.
-                                    </div>
-                                </a>
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Messages -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-envelope fa-fw"></i>
-                                <span class="badge badge-danger badge-counter">7</span>
-                            </a>
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">Message Center</h6>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg" alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">Hi there! I am wondering if you can help me with a problem I've been having.</div>
-                                        <div class="small text-gray-500">Emily Fowler · 58m</div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg" alt="...">
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">I have the photos that you ordered last month, how would you like them sent to you?</div>
-                                        <div class="small text-gray-500">Jae Chun · 1d</div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg" alt="...">
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Last month's report looks great, I am very happy with the progress so far, keep up the good work!</div>
-                                        <div class="small text-gray-500">Morgan Alvarez · 2d</div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
-                            </div>
-                        </li>
-
                         <div class="topbar-divider d-none d-sm-block"></div>
-
-                        <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-                                    <?php echo htmlspecialchars($first_name); ?>
-                                </span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo htmlspecialchars($first_name); ?></span>
                                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="logout.php">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
-                                </a>
+                                <a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout</a>
                             </div>
                         </li>
                     </ul>
                 </nav>
-                <!-- End of Topbar -->
 
-                <!-- Begin Page Content -->
                 <div class="container-fluid">
-                    <!-- Page Heading -->
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">
-                            <i class="fas fa-file-invoice"></i> Quote Details
-                        </h1>
-                        <div>
+                    <div class="d-sm-flex align-items-center justify-content-between mb-3">
+                        <div class="action-buttons">
                             <a href="client-quote.php?id=<?php echo $quote['client_id']; ?>" class="btn btn-sm btn-secondary shadow-sm">
                                 <i class="fas fa-arrow-left"></i> Back to Quotes
                             </a>
@@ -535,19 +1184,15 @@ td { padding: 0.75rem; border-bottom: 1px solid #e3e6f0; font-size: 0.9rem; }
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card shadow mb-4">
-                                <div class="card-body">
+                    <div class="row" style="flex:1;">
+                        <div class="col-12" style="display:flex; flex-direction:column;">
+                            <div class="card shadow quote-card" style="flex:1;">
+                                <div class="card-body" style="padding: 0; display:flex; flex-direction:column;">
                                     <div class="quote-container">
-                                        <!-- Quote Header with Logo -->
+                                        <!-- Quote Header -->
                                         <div class="quote-header">
                                             <div class="header-left">
                                                 <?php echo $logo_html; ?>
-                                                <div>
-                                                    <div class="company-name"><?php echo ($settings['company_name'] ?? 'Marlani'); ?><span>.</span></div>
-                                                    <div class="tagline">Innovate · Integrate · Elevate</div>
-                                                </div>
                                             </div>
                                             <div class="header-right">
                                                 <div class="quote-badge">QUOTATION</div>
@@ -576,10 +1221,16 @@ td { padding: 0.75rem; border-bottom: 1px solid #e3e6f0; font-size: 0.9rem; }
                                             <div class="billing-box">
                                                 <h4><i class="fas fa-user"></i> Bill To</h4>
                                                 <div class="client-name"><?php echo htmlspecialchars($client['company_name']); ?></div>
-                                                <p><?php echo htmlspecialchars($client['contact_person'] ?? ''); ?></p>
+                                                <?php if (!empty($client['contact_person'])): ?>
+                                                <p><?php echo htmlspecialchars($client['contact_person']); ?></p>
+                                                <?php endif; ?>
                                                 <p><?php echo htmlspecialchars($client['email']); ?></p>
-                                                <p><?php echo htmlspecialchars($client['phone'] ?? ''); ?></p>
-                                                <p><?php echo htmlspecialchars($client['address'] ?? ''); ?></p>
+                                                <?php if (!empty($client['phone'])): ?>
+                                                <p><?php echo htmlspecialchars($client['phone']); ?></p>
+                                                <?php endif; ?>
+                                                <?php if (!empty($client['address'])): ?>
+                                                <p><?php echo htmlspecialchars($client['address']); ?></p>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="billing-box text-right">
                                                 <h4><i class="fas fa-file-alt"></i> Quote Details</h4>
@@ -595,30 +1246,32 @@ td { padding: 0.75rem; border-bottom: 1px solid #e3e6f0; font-size: 0.9rem; }
                                         <div class="section-title one-time">
                                             <i class="fas fa-cube"></i> One-Time Services
                                         </div>
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <th style="width:5%;">#</th>
-                                                    <th style="width:25%;">Item</th>
-                                                    <th style="width:30%;">Description</th>
-                                                    <th style="width:10%;text-align:center;">Qty</th>
-                                                    <th style="width:15%;text-align:right;">Unit Price</th>
-                                                    <th style="width:15%;text-align:right;">Total</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php $counter = 1; foreach ($one_time_items as $item): ?>
-                                                <tr>
-                                                    <td><?php echo $counter++; ?></td>
-                                                    <td><div class="item-name"><?php echo htmlspecialchars($item['item_name']); ?></div></td>
-                                                    <td><div class="item-desc"><?php echo htmlspecialchars($item['description']); ?></div></td>
-                                                    <td class="text-center"><?php echo $item['quantity']; ?></td>
-                                                    <td class="text-right">R <?php echo number_format($item['unit_price'], 2); ?></td>
-                                                    <td class="text-right">R <?php echo number_format($item['total'], 2); ?></td>
-                                                </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
+                                        <div class="table-wrapper">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Item</th>
+                                                        <th>Description</th>
+                                                        <th style="text-align:center;">Qty</th>
+                                                        <th style="text-align:right;">Unit Price</th>
+                                                        <th style="text-align:right;">Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php $counter = 1; foreach ($one_time_items as $item): ?>
+                                                    <tr>
+                                                        <td><?php echo $counter++; ?></td>
+                                                        <td><div class="item-name"><?php echo htmlspecialchars($item['item_name']); ?></div></td>
+                                                        <td><div class="item-desc"><?php echo htmlspecialchars($item['description']); ?></div></td>
+                                                        <td class="text-center"><?php echo $item['quantity']; ?></td>
+                                                        <td class="text-right">R <?php echo number_format($item['unit_price'], 2); ?></td>
+                                                        <td class="text-right">R <?php echo number_format($item['total'], 2); ?></td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                         <?php endif; ?>
 
                                         <!-- Monthly Subscription/Maintenance Services Table -->
@@ -626,30 +1279,32 @@ td { padding: 0.75rem; border-bottom: 1px solid #e3e6f0; font-size: 0.9rem; }
                                         <div class="section-title subscription">
                                             <i class="fas fa-clock"></i> Monthly Subscription / Maintenance
                                         </div>
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <th style="width:5%;">#</th>
-                                                    <th style="width:25%;">Item</th>
-                                                    <th style="width:30%;">Description</th>
-                                                    <th style="width:10%;text-align:center;">Qty</th>
-                                                    <th style="width:15%;text-align:right;">Monthly Fee</th>
-                                                    <th style="width:15%;text-align:right;">Total</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php $counter = 1; foreach ($subscription_items as $sub_item): ?>
-                                                <tr>
-                                                    <td><?php echo $counter++; ?></td>
-                                                    <td><div class="item-name"><?php echo htmlspecialchars($sub_item['item']['item_name']); ?></div></td>
-                                                    <td><div class="item-desc"><?php echo htmlspecialchars($sub_item['item']['description']); ?></div></td>
-                                                    <td class="text-center"><?php echo $sub_item['item']['quantity']; ?></td>
-                                                    <td class="text-right">R <?php echo number_format($sub_item['monthly_fee'], 2); ?></td>
-                                                    <td class="text-right">R <?php echo number_format($sub_item['item']['total'], 2); ?></td>
-                                                </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
+                                        <div class="table-wrapper">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Item</th>
+                                                        <th>Description</th>
+                                                        <th style="text-align:center;">Qty</th>
+                                                        <th style="text-align:right;">Monthly Fee</th>
+                                                        <th style="text-align:right;">Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php $counter = 1; foreach ($subscription_items as $sub_item): ?>
+                                                    <tr>
+                                                        <td><?php echo $counter++; ?></td>
+                                                        <td><div class="item-name"><?php echo htmlspecialchars($sub_item['item']['item_name']); ?></div></td>
+                                                        <td><div class="item-desc"><?php echo htmlspecialchars($sub_item['item']['description']); ?></div></td>
+                                                        <td class="text-center"><?php echo $sub_item['item']['quantity']; ?></td>
+                                                        <td class="text-right">R <?php echo number_format($sub_item['monthly_fee'], 2); ?></td>
+                                                        <td class="text-right">R <?php echo number_format($sub_item['item']['total'], 2); ?></td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                         <?php endif; ?>
 
                                         <!-- Totals -->
@@ -659,7 +1314,7 @@ td { padding: 0.75rem; border-bottom: 1px solid #e3e6f0; font-size: 0.9rem; }
                                             <?php endif; ?>
                                             <?php if ($monthly_total > 0): ?>
                                             <p class="subscription-total"><strong>Monthly Total:</strong> R <?php echo number_format($monthly_total, 2); ?></p>
-                                            <p><small class="text-muted"><i class="fas fa-info-circle"></i> This is the total monthly recurring fee</small></p>
+                                            <p style="font-size:0.7rem;color:#888;margin:0;"><i class="fas fa-info-circle"></i> Total monthly recurring fee</p>
                                             <?php endif; ?>
                                             <p class="grand-total"><strong>Grand Total:</strong> R <?php echo number_format($quote['grand_total'], 2); ?></p>
                                         </div>
@@ -679,7 +1334,7 @@ td { padding: 0.75rem; border-bottom: 1px solid #e3e6f0; font-size: 0.9rem; }
                                         </div>
 
                                         <!-- Footer -->
-                                        <div class="footer">
+                                        <div class="footer-text">
                                             <p>Generated automatically upon client registration</p>
                                             <p>Thank you for choosing <span class="brand"><?php echo htmlspecialchars($settings['company_name'] ?? 'Marlani Technologies'); ?></span></p>
                                             <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($settings['company_name'] ?? 'Marlani Technologies'); ?> - All Rights Reserved</p>
@@ -690,42 +1345,38 @@ td { padding: 0.75rem; border-bottom: 1px solid #e3e6f0; font-size: 0.9rem; }
                         </div>
                     </div>
                 </div>
-                <!-- End of container-fluid -->
-
-                <!-- Footer -->
-                <footer class="sticky-footer bg-blue">
-                    <div class="copyright text-center">
-                        <span>Copyright &copy; Marlani Technologies 2026</span>
-                    </div>
-                </footer>
             </div>
-            <!-- End of Main Content -->
         </div>
-        <!-- End of Content Wrapper -->
     </div>
-    <!-- End of Page Wrapper -->
-
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
 
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Core plugin JavaScript-->
     <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-
-    <!-- Custom scripts for all pages-->
     <script src="js/sb-admin-2.min.js"></script>
 
     <script>
     $(function() {
+        // Load sidebar from external file
         $("#sidebar-container").load("sidebar.html", function() {
             console.log("Sidebar loaded successfully");
             
-            $('#sidebarToggleTop').on('click', function() {
+            // Set active state for current page
+            $('#sidebar-container .nav-item').removeClass('active');
+            $('#sidebar-container .nav-item a[href*="view-quote"]').closest('.nav-item').addClass('active');
+            
+            // Find and highlight the parent menu if in submenu
+            $('#sidebar-container .nav-item .collapse .collapse-item').each(function() {
+                if ($(this).attr('href') && $(this).attr('href').includes('view-quote')) {
+                    $(this).addClass('active');
+                    $(this).closest('.collapse').addClass('show');
+                    $(this).closest('.nav-item').find('.nav-link').removeClass('collapsed');
+                }
+            });
+            
+            // Sidebar toggle for mobile
+            $('#sidebarToggleTop').on('click', function(e) {
+                e.preventDefault();
                 $('#sidebar-container').toggleClass('toggled');
                 if ($('#sidebar-container').hasClass('toggled')) {
                     $('body').append('<div class="sidebar-overlay active"></div>');
@@ -734,9 +1385,18 @@ td { padding: 0.75rem; border-bottom: 1px solid #e3e6f0; font-size: 0.9rem; }
                 }
             });
             
+            // Close sidebar on overlay click
             $(document).on('click', '.sidebar-overlay', function() {
                 $('#sidebar-container').removeClass('toggled');
                 $('.sidebar-overlay').remove();
+            });
+            
+            // Handle window resize - remove toggled state on desktop
+            $(window).resize(function() {
+                if ($(window).width() > 768) {
+                    $('#sidebar-container').removeClass('toggled');
+                    $('.sidebar-overlay').remove();
+                }
             });
         });
     });
