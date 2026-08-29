@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Client Report - 2026-08-29</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+        h1 { color: #003986; border-bottom: 3px solid #003986; padding-bottom: 10px; }
+        h2 { color: #4e73df; margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th { background: #003986; color: #fff; padding: 10px; text-align: left; }
+        td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
+        tr:hover { background: #f5f5f5; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 20px 0; }
+        .stat-box { background: #f8f9fc; padding: 15px; border-radius: 8px; border-left: 4px solid #4e73df; }
+        .stat-box .number { font-size: 24px; font-weight: bold; color: #003986; }
+        .stat-box .label { color: #858796; font-size: 12px; text-transform: uppercase; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #999; font-size: 12px; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .badge-active { background: #dcfce7; color: #16a34a; }
+        .badge-pending { background: #fef3c7; color: #d97706; }
+        .badge-inactive { background: #fee2e2; color: #dc2626; }
+        .badge-suspended { background: #f3f4f6; color: #6b7280; }
+        .text-right { text-align: right; }
+        .mt-20 { margin-top: 20px; }
+        .mb-10 { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Client Report</h1>
+    <p>Generated on: 2026-08-29 18:55:45</p>
+    
+    <div class="stats-grid">
+        <div class="stat-box">
+            <div class="number">3</div>
+            <div class="label">Total Clients</div>
+        </div>
+        <div class="stat-box" style="border-left-color: #1cc88a;">
+            <div class="number">1</div>
+            <div class="label">Active Clients</div>
+        </div>
+        <div class="stat-box" style="border-left-color: #36b9cc;">
+            <div class="number">R 48,400</div>
+            <div class="label">Total Quote Value</div>
+        </div>
+        <div class="stat-box" style="border-left-color: #f6c23e;">
+            <div class="number">R 16,133</div>
+            <div class="label">Avg Quote Value</div>
+        </div>
+    </div>
+    <h2>Client Status Distribution</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Count</th>
+                <th>Percentage</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="badge badge-active">Active</span></td>
+                <td>1</td>
+                <td>33%</td>
+            </tr>
+            <tr>
+                <td><span class="badge badge-pending">Pending</span></td>
+                <td>2</td>
+                <td>67%</td>
+            </tr>
+            <tr>
+                <td><span class="badge badge-inactive">Inactive</span></td>
+                <td>0</td>
+                <td>0%</td>
+            </tr>
+            <tr>
+                <td><span class="badge badge-suspended">Suspended</span></td>
+                <td>0</td>
+                <td>0%</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2>Client Type Distribution</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Business</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td>Individual</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>Government</td>
+                <td>0</td>
+            </tr>
+            <tr>
+                <td>Non profit</td>
+                <td>0</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2>Top Clients by Quotes</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Client</th>
+                <th>Code</th>
+                <th>Quotes</th>
+                <th>Total Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Mandiaysi Limpopo Agrico</td>
+                <td>CL-2026-001</td>
+                <td>5</td>
+                <td class="text-right">R 47,000.00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>N/A</td>
+                <td>CL-2026-019</td>
+                <td>1</td>
+                <td class="text-right">R 1,400.00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Southern crops consortium</td>
+                <td>CL-2026-018</td>
+                <td>0</td>
+                <td class="text-right">R 0.00</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2>Monthly New Client Registrations</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Month</th>
+                <th>New Clients</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>August</td>
+                <td>3</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="footer">
+        <p>Generated by Marlani Admin System</p>
+        <p>&copy; 2026 Marlani Technologies - All Rights Reserved</p>
+    </div>
+</body>
+</html>

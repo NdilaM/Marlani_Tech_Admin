@@ -3,16 +3,16 @@
 session_start();
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header('Location: login.html');
+    header('Location: ../../login.html');
     exit();
 }
 
-require_once 'db.php';
+require_once '../../db.php';
 
 $quote_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if ($quote_id == 0) {
-    header('Location: clients.php');
+    header('Location: ../clients.php');
     exit();
 }
 
@@ -22,7 +22,7 @@ $stmt->execute([$quote_id]);
 $quote = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$quote) {
-    header('Location: clients.php');
+    header('Location: ../clients.php');
     exit();
 }
 
@@ -84,7 +84,7 @@ foreach ($items as $item) {
 }
 
 // Logo path - keep original logo with transparency
-$logo_path = 'img/company_logo.png';
+$logo_path = '../../img/company_logo.png';
 $logo_html = '';
 if (file_exists($logo_path)) {
     // Use the logo with white text version for dark background
@@ -104,11 +104,11 @@ if (file_exists($logo_path)) {
     <title>Marlani Admin - View Quote</title>
 
     <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="../../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
 
     <!-- Custom styles for this template-->
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="../../css/sb-admin-2.min.css" rel="stylesheet">
 
     <style>
         /* ===== SIDEBAR LOADING FIXES - ORIGINAL STYLE ===== */
@@ -633,10 +633,6 @@ if (file_exists($logo_path)) {
                 font-size: 1rem !important;
             }
 
-            .navbar-search {
-                display: none !important;
-            }
-
             .container-fluid {
                 padding: 0.25rem;
             }
@@ -1158,10 +1154,10 @@ if (file_exists($logo_path)) {
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo htmlspecialchars($first_name); ?></span>
-                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+                                <img class="img-profile rounded-circle" src="../../img/undraw_profile.svg">
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout</a>
+                                <a class="dropdown-item" href="../../logout.php"><i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout</a>
                             </div>
                         </li>
                     </ul>
@@ -1170,7 +1166,7 @@ if (file_exists($logo_path)) {
                 <div class="container-fluid">
                     <div class="d-sm-flex align-items-center justify-content-between mb-3">
                         <div class="action-buttons">
-                            <a href="client-quote.php?id=<?php echo $quote['client_id']; ?>" class="btn btn-sm btn-secondary shadow-sm">
+                            <a href="../client-quote.php?id=<?php echo $quote['client_id']; ?>" class="btn btn-sm btn-secondary shadow-sm">
                                 <i class="fas fa-arrow-left"></i> Back to Quotes
                             </a>
                             <?php if ($quote['pdf_path']): ?>
@@ -1350,15 +1346,15 @@ if (file_exists($logo_path)) {
     </div>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-    <script src="js/sb-admin-2.min.js"></script>
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../../vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="../../js/sb-admin-2.min.js"></script>
 
     <script>
     $(function() {
         // Load sidebar from external file
-        $("#sidebar-container").load("sidebar.html", function() {
+        $("#sidebar-container").load("../../sidebar.html", function() {
             console.log("Sidebar loaded successfully");
             
             // Set active state for current page

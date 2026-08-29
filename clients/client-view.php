@@ -3,11 +3,11 @@
 session_start();
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header('Location: login.html');
+    header('Location: ../login.html');
     exit();
 }
 
-require_once 'db.php';
+require_once '../db.php';
 
 $client_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -44,8 +44,11 @@ $first_name = $_SESSION['first_name'] ?? 'User';
     <title>Marlani Admin - View Client</title>
 
     <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="../css/sb-admin-2.min.css" rel="stylesheet">
 
 <style>
 /* ===== ALL CSS FROM VIEW-QUOTE.PHP ===== */
@@ -1056,48 +1059,6 @@ a:focus {
   height: 4.375rem;
 }
 
-.topbar .navbar-search {
-    width: 25rem;
-}
-
-.topbar .navbar-search .input-group {
-    position: relative;
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    width: 100%;
-}
-
-.topbar .navbar-search .form-control {
-    font-size: 0.85rem;
-    height: auto;
-    padding-right: 3rem;
-    border-radius: 10rem 0 0 10rem;
-    border: 1px solid #d1d3e2;
-    background-color: #f8f9fc;
-}
-
-.topbar .navbar-search .input-group-append {
-    margin-left: -1px;
-}
-
-.topbar .navbar-search .input-group-append .btn {
-    border-radius: 0 10rem 10rem 0;
-    padding: 0.375rem 0.75rem;
-    background-color: #4e73df;
-    color: #fff;
-    border: 1px solid #4e73df;
-}
-
-.topbar .navbar-search .input-group-append .btn:hover {
-    background-color: #2e59d9;
-    border-color: #2653d4;
-}
-
-.topbar .navbar-search input {
-  font-size: 0.85rem;
-  height: auto;
-}
 
 .topbar .topbar-divider {
   width: 0;
@@ -1333,19 +1294,19 @@ form.user .btn-user {
 }
 
 .bg-login-image {
-  background: url(img/company_login.png);
+  background: url(../img/company_login.png);
   background-position: center;
   background-size: cover;
 }
 
 .bg-register-image {
-  background: url(img/company_register.png);
+  background: url(../img/company_register.png);
   background-position: center;
   background-size: cover;
 }
 
 .bg-password-image {
-  background: url(img/company_password.png);
+  background: url(../img/company_password.png);
   background-position: center;
   background-size: cover;
 }
@@ -1516,6 +1477,39 @@ form.user .btn-user {
     gap: 0.5rem;
     flex-wrap: wrap;
     margin-top: 1rem;
+    margin-bottom: 2.5rem;
+}
+
+/* ===== SIDEBAR COLLAPSE ON ALL SCREENS ===== */
+#sidebarToggleTop {
+    display: inline-flex !important;
+}
+
+/* When sidebar is collapsed on desktop */
+.sidebar.collapsed {
+    width: 6.5rem !important;
+}
+
+.sidebar.collapsed .sidebar-brand-text {
+    display: none !important;
+}
+
+.sidebar.collapsed .nav-link span {
+    display: none !important;
+}
+
+.sidebar.collapsed .nav-link i {
+    margin-right: 0 !important;
+    font-size: 1.3rem !important;
+}
+
+.sidebar.collapsed .sidebar-heading {
+    text-align: center !important;
+    font-size: 0.55rem !important;
+}
+
+.sidebar.collapsed .sidebar-card {
+    display: none !important;
 }
 </style>
 </head>
@@ -1531,22 +1525,14 @@ form.user .btn-user {
             <div id="content">
                 <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                    <!-- Sidebar Toggle (Topbar) -->
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                    <!-- Sidebar Toggle (Topbar) - Always visible -->
+                    <button id="sidebarToggleTop" class="btn btn-link rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <!-- Topbar Search -->
-                    <form class="form-inline mr-auto ml-3 navbar-search">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-user"></i> Client Details
+                    </h1>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -1605,7 +1591,7 @@ form.user .btn-user {
                                 <h6 class="dropdown-header">Message Center</h6>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg" alt="...">
+                                        <img class="rounded-circle" src="../img/undraw_profile_1.svg" alt="...">
                                         <div class="status-indicator bg-success"></div>
                                     </div>
                                     <div class="font-weight-bold">
@@ -1615,7 +1601,7 @@ form.user .btn-user {
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg" alt="...">
+                                        <img class="rounded-circle" src="../img/undraw_profile_2.svg" alt="...">
                                         <div class="status-indicator"></div>
                                     </div>
                                     <div>
@@ -1625,7 +1611,7 @@ form.user .btn-user {
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg" alt="...">
+                                        <img class="rounded-circle" src="../img/undraw_profile_3.svg" alt="...">
                                         <div class="status-indicator bg-warning"></div>
                                     </div>
                                     <div>
@@ -1645,7 +1631,7 @@ form.user .btn-user {
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">
                                     <?php echo htmlspecialchars($first_name); ?>
                                 </span>
-                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+                                <img class="img-profile rounded-circle" src="../img/undraw_profile.svg">
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="#">
@@ -1661,7 +1647,7 @@ form.user .btn-user {
                                     Activity Log
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="logout.php">
+                                <a class="dropdown-item" href="../logout.php">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
@@ -1670,27 +1656,9 @@ form.user .btn-user {
                     </ul>
                 </nav>
                 <!-- End of Topbar -->
-
+                 
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-                    <!-- Page Heading -->
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">
-                            <i class="fas fa-user"></i> Client Details
-                        </h1>
-                        <div>
-                            <a href="clients.php" class="btn btn-sm btn-secondary shadow-sm">
-                                <i class="fas fa-arrow-left"></i> Back to Clients
-                            </a>
-                            <a href="client-edit.php?id=<?php echo $client_id; ?>" class="btn btn-sm btn-warning shadow-sm">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
-                            <a href="generate-quote.php?client_id=<?php echo $client_id; ?>" class="btn btn-sm btn-success shadow-sm">
-                                <i class="fas fa-file-invoice"></i> Create Quote
-                            </a>
-                        </div>
-                    </div>
-
                     <!-- Client Details -->
                     <div class="row">
                         <div class="col-12">
@@ -1815,7 +1783,7 @@ form.user .btn-user {
                                 <a href="client-edit.php?id=<?php echo $client_id; ?>" class="btn btn-warning">
                                     <i class="fas fa-edit"></i> Edit Client
                                 </a>
-                                <a href="generate-quote.php?client_id=<?php echo $client_id; ?>" class="btn btn-success">
+                                <a href="../clients/Quotes/generate-quote.php?client_id=<?php echo $client_id; ?>" class="btn btn-success">
                                     <i class="fas fa-file-invoice"></i> Create Quote
                                 </a>
                                 <a href="client-quote.php?id=<?php echo $client_id; ?>" class="btn btn-info">
@@ -1824,10 +1792,13 @@ form.user .btn-user {
                                 <a href="clients.php" class="btn btn-secondary">
                                     <i class="fas fa-arrow-left"></i> Back to Clients
                                 </a>
+                                <br\>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div>
+          </div>
                 <!-- End of container-fluid -->
 
                 <!-- Footer -->
@@ -1840,6 +1811,7 @@ form.user .btn-user {
             <!-- End of Main Content -->
         </div>
         <!-- End of Content Wrapper -->
+         
     </div>
     <!-- End of Page Wrapper -->
 
@@ -1849,27 +1821,49 @@ form.user .btn-user {
     </a>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../vendor/jquery/jquery.min.js"></script>
+    <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="../vendor/jquery-easing/jquery.easing.min.js"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
+    <script src="../js/sb-admin-2.min.js"></script>
 
     <script>
     // Load sidebar from external file
     $(function() {
-        $("#sidebar-container").load("sidebar.html", function() {
+        $("#sidebar-container").load("../sidebar.html", function() {
             console.log("Sidebar loaded successfully");
             
-            // Fix sidebar toggle for mobile - toggle the container
-            $('#sidebarToggleTop').on('click', function() {
+            // Set active state for current page
+            $('#sidebar-container .nav-item').removeClass('active');
+            $('#sidebar-container .nav-item a[href*="client-view"]').closest('.nav-item').addClass('active');
+            
+            // Find and highlight the parent menu if in submenu
+            $('#sidebar-container .nav-item .collapse .collapse-item').each(function() {
+                if ($(this).attr('href') && $(this).attr('href').includes('client-view')) {
+                    $(this).addClass('active');
+                    $(this).closest('.collapse').addClass('show');
+                    $(this).closest('.nav-item').find('.nav-link').removeClass('collapsed');
+                }
+            });
+            
+            // Sidebar toggle for all screen sizes - no effects
+            $('#sidebarToggleTop').on('click', function(e) {
+                e.preventDefault();
+                
+                // Toggle the sidebar container
                 $('#sidebar-container').toggleClass('toggled');
+                
+                // Toggle the sidebar collapse class
+                $('.sidebar').toggleClass('collapsed');
+                
                 // Add overlay for mobile
                 if ($('#sidebar-container').hasClass('toggled')) {
-                    $('body').append('<div class="sidebar-overlay active"></div>');
+                    if ($(window).width() <= 768) {
+                        $('body').append('<div class="sidebar-overlay active"></div>');
+                    }
                 } else {
                     $('.sidebar-overlay').remove();
                 }
@@ -1878,7 +1872,16 @@ form.user .btn-user {
             // Close sidebar when clicking overlay
             $(document).on('click', '.sidebar-overlay', function() {
                 $('#sidebar-container').removeClass('toggled');
+                $('.sidebar').removeClass('collapsed');
                 $('.sidebar-overlay').remove();
+            });
+            
+            // Handle window resize - remove toggled state on desktop
+            $(window).resize(function() {
+                if ($(window).width() > 768) {
+                    $('#sidebar-container').removeClass('toggled');
+                    $('.sidebar-overlay').remove();
+                }
             });
         });
     });
