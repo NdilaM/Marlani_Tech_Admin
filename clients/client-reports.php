@@ -642,7 +642,7 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
                         </div>
                         <div>
                             
-                                <a href="reprorts.php" class="btn btn-generate btn-sm btn-secondary shadow-sm">
+                                <a href="reports.php" class="btn btn-generate btn-sm btn-secondary shadow-sm">
                                 <i class="fa-regular fa-pen-to-square"></i> Generate Report
                             </a>
                             
@@ -842,7 +842,7 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
     <script>
     // Load sidebar from external file - same as index.php
     $(function() {
-        $("#sidebar-container").load("../sidebar.html", function() {
+        $("#sidebar-container").load("../sidebar.php", function() {
             console.log("Sidebar loaded successfully");
             
             // Set active state for current page

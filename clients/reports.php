@@ -1235,7 +1235,7 @@ if (isset($_GET['generate']) && $_GET['generate'] == '1') {
     <script>
     // Load sidebar from external file
     $(function() {
-        $("#sidebar-container").load("../sidebar.html", function() {
+        $("#sidebar-container").load("../sidebar.php", function() {
             console.log("Sidebar loaded successfully");
             
             // Set active state for current page

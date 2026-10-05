@@ -1793,7 +1793,7 @@ form.user .btn-user {
     <script>
     // Load sidebar from external file
     $(function() {
-        $("#sidebar-container").load("../sidebar.html", function() {
+        $("#sidebar-container").load("../sidebar.php", function() {
             console.log("Sidebar loaded successfully");
             
             // Fix sidebar toggle for mobile - toggle the container

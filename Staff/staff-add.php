@@ -1,37 +1,74 @@
 <?php
-// client-view.php - View Client Details
+// client-add.php - Add New Client
 session_start();
 
+// Check if user is logged in
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header('Location: ../login.html');
     exit();
 }
 
+// Include database connection
 require_once '../db.php';
 
-$client_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
-if ($client_id == 0) {
-    header('Location: clients.php');
-    exit();
-}
-
-// Get client info
-$stmt = $conn->prepare("SELECT * FROM clients WHERE id = ?");
-$stmt->execute([$client_id]);
-$client = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$client) {
-    header('Location: clients.php');
-    exit();
-}
-
-// Get quote count for this client
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM quotations WHERE client_id = ?");
-$stmt->execute([$client_id]);
-$quote_count = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-
+// Get user data from session
 $first_name = $_SESSION['first_name'] ?? 'User';
+$staff_id = $_SESSION['staff_id'] ?? 1;
+$errors = [];
+$success = false;
+
+// Function to generate client code
+function generateClientCode($conn) {
+    $stmt = $conn->query("SELECT MAX(id) as max_id FROM staff");
+    $max_id = $stmt->fetch(PDO::FETCH_ASSOC)['max_id'] ?? 0;
+    return 'CL-' . date('Y') . '-' . str_pad(($max_id + 1), 3, '0', STR_PAD_LEFT);
+}
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get form data
+    $first_name = trim($_POST['first_name'] ?? '');
+    $last_name = trim($_POST['last_name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $created_at = trim($_POST['created_at'] ?? '');
+    
+    // Validate
+    if (empty($first_name)) $errors[] = "Name is required";
+    if (empty($email)) $errors[] = "Email is required";
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Invalid email format";
+    
+    // Check if email exists
+    if (!empty($email)) {
+        $stmt = $conn->prepare("SELECT id FROM clients WHERE email = ?");
+        $stmt->execute([$email]);
+        if ($stmt->rowCount() > 0) {
+            $errors[] = "Email already exists";
+        }
+    }
+    
+    // If no errors, insert client
+    if (empty($errors)) {
+        try {
+            $client_code = generateClientCode($conn);
+            
+            $stmt = $conn->prepare("
+                INSERT INTO staff (first_name, last_name, email, created_at)
+                VALUES (?, ?, ?, ?)
+            ");
+            
+            $stmt->execute([
+                $first_name, $last_name, $email
+            ]);
+            
+            $_SESSION['success'] = "Staff added successfully!";
+            header('Location: view-staff.php');
+            exit();
+            
+        } catch(Exception $e) {
+            $errors[] = "Error: " . $e->getMessage();
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -41,7 +78,7 @@ $first_name = $_SESSION['first_name'] ?? 'User';
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Marlani Admin - View Client</title>
+    <title>Marlani Admin - Add Client</title>
 
     <!-- Custom fonts for this template-->
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -1426,30 +1463,23 @@ form.user .btn-user {
     flex: 1 0 auto;
 }
 
-/* ===== CUSTOM STYLES FOR VIEW CLIENT PAGE ===== */
-.detail-row {
-    display: flex;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #f0f0f0;
+/* ===== CUSTOM STYLES FOR CLIENT ADD PAGE ===== */
+.error-messages {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
 }
-.detail-label {
-    font-weight: 600;
-    color: #5a5c69;
-    width: 150px;
-    flex-shrink: 0;
+.error-messages ul { padding-left: 1.5rem; }
+
+.form-group .required { color: #e74a3b; }
+
+/* Center the form */
+.form-card {
+    max-width: 800px;
+    margin: 0 auto;
 }
-.detail-value {
-    color: #333;
-    flex: 1;
-}
-.detail-value .badge {
-    font-size: 0.8rem;
-    padding: 0.35rem 0.75rem;
-}
-.badge-active { background: #dcfce7; color: #16a34a; }
-.badge-inactive { background: #fee2e2; color: #dc2626; }
-.badge-pending { background: #fef3c7; color: #d97706; }
-.badge-suspended { background: #f3f4f6; color: #6b7280; }
 
 .btn-warning {
     color: #fff;
@@ -1460,56 +1490,6 @@ form.user .btn-user {
     color: #fff;
     background-color: #dda20a;
     border-color: #d39a0a;
-}
-.btn-info {
-    color: #fff;
-    background-color: #36b9cc;
-    border-color: #36b9cc;
-}
-.btn-info:hover {
-    color: #fff;
-    background-color: #2c9faf;
-    border-color: #2a96a5;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: 1rem;
-    margin-bottom: 2.5rem;
-}
-
-/* ===== SIDEBAR COLLAPSE ON ALL SCREENS ===== */
-#sidebarToggleTop {
-    display: inline-flex !important;
-}
-
-/* When sidebar is collapsed on desktop */
-.sidebar.collapsed {
-    width: 6.5rem !important;
-}
-
-.sidebar.collapsed .sidebar-brand-text {
-    display: none !important;
-}
-
-.sidebar.collapsed .nav-link span {
-    display: none !important;
-}
-
-.sidebar.collapsed .nav-link i {
-    margin-right: 0 !important;
-    font-size: 1.3rem !important;
-}
-
-.sidebar.collapsed .sidebar-heading {
-    text-align: center !important;
-    font-size: 0.55rem !important;
-}
-
-.sidebar.collapsed .sidebar-card {
-    display: none !important;
 }
 </style>
 </head>
@@ -1525,14 +1505,14 @@ form.user .btn-user {
             <div id="content">
                 <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                    <!-- Sidebar Toggle (Topbar) - Always visible -->
-                    <button id="sidebarToggleTop" class="btn btn-link rounded-circle mr-3">
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <h1 class="h3 mb-0 text-gray-800">
-                        <i class="fas fa-user"></i> Client Details
-                    </h1>
+                  <h1 class="h3 mb-0 text-gray-800">
+                            <i class="fas fa-user-plus"></i> Add Staff Member
+                        </h1>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -1656,149 +1636,129 @@ form.user .btn-user {
                     </ul>
                 </nav>
                 <!-- End of Topbar -->
-                 
+
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-                    <!-- Client Details -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Client Information</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="detail-row">
-                                                <div class="detail-label">Client Code</div>
-                                                <div class="detail-value"><strong><?php echo htmlspecialchars($client['client_code']); ?></strong></div>
-                                            </div>
-                                            <div class="detail-row">
-                                                <div class="detail-label">Company Name</div>
-                                                <div class="detail-value"><strong><?php echo htmlspecialchars($client['company_name']); ?></strong></div>
-                                            </div>
-                                            <div class="detail-row">
-                                                <div class="detail-label">Contact Person</div>
-                                                <div class="detail-value"><?php echo htmlspecialchars($client['contact_person'] ?? 'N/A'); ?></div>
-                                            </div>
-                                            <div class="detail-row">
-                                                <div class="detail-label">Email</div>
-                                                <div class="detail-value"><a href="mailto:<?php echo htmlspecialchars($client['email']); ?>"><?php echo htmlspecialchars($client['email']); ?></a></div>
-                                            </div>
-                                            <div class="detail-row">
-                                                <div class="detail-label">Phone</div>
-                                                <div class="detail-value"><?php echo htmlspecialchars($client['phone'] ?? 'N/A'); ?></div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="detail-row">
-                                                <div class="detail-label">Address</div>
-                                                <div class="detail-value"><?php echo htmlspecialchars($client['address'] ?? 'N/A'); ?></div>
-                                            </div>
-                                            <div class="detail-row">
-                                                <div class="detail-label">City</div>
-                                                <div class="detail-value"><?php echo htmlspecialchars($client['city'] ?? 'N/A'); ?></div>
-                                            </div>
-                                            <div class="detail-row">
-                                                <div class="detail-label">Province</div>
-                                                <div class="detail-value"><?php echo htmlspecialchars($client['province'] ?? 'N/A'); ?></div>
-                                            </div>
-                                            <div class="detail-row">
-                                                <div class="detail-label">Postal Code</div>
-                                                <div class="detail-value"><?php echo htmlspecialchars($client['postal_code'] ?? 'N/A'); ?></div>
-                                            </div>
-                                            <div class="detail-row">
-                                                <div class="detail-label">Country</div>
-                                                <div class="detail-value"><?php echo htmlspecialchars($client['country'] ?? 'South Africa'); ?></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Page Heading -->
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                       <a href="../Staff/view-staff.php" class="btn btn-sm btn-secondary shadow-sm">
+                            <i class="fas fa-arrow-left"></i> Back to View Staff
+                        </a>
                     </div>
 
-                    <!-- Additional Info -->
-                    <div class="row">
-                        <div class="col-md-6">
+                    <!-- Form Card - Centered -->
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Business Information</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Staff Information</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="detail-row">
-                                        <div class="detail-label">Industry</div>
-                                        <div class="detail-value"><?php echo htmlspecialchars($client['industry'] ?? 'N/A'); ?></div>
-                                    </div>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Client Type</div>
-                                        <div class="detail-value"><?php echo htmlspecialchars(ucfirst($client['client_type'] ?? 'N/A')); ?></div>
-                                    </div>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Status</div>
-                                        <div class="detail-value">
-                                            <span class="badge badge-<?php echo $client['status']; ?>">
-                                                <?php echo ucfirst($client['status']); ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Summary</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="detail-row">
-                                        <div class="detail-label">Total Quotes</div>
-                                        <div class="detail-value"><strong><?php echo $quote_count; ?></strong></div>
-                                    </div>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Created</div>
-                                        <div class="detail-value"><?php echo date('d/m/Y H:i', strtotime($client['created_at'])); ?></div>
-                                    </div>
-                                    <?php if ($client['updated_at']): ?>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Last Updated</div>
-                                        <div class="detail-value"><?php echo date('d/m/Y H:i', strtotime($client['updated_at'])); ?></div>
+                                    <?php if (!empty($errors)): ?>
+                                    <div class="error-messages">
+                                        <ul>
+                                            <?php foreach ($errors as $error): ?>
+                                            <li><?php echo htmlspecialchars($error); ?></li>
+                                            <?php endforeach; ?>
+                                        </ul>
                                     </div>
                                     <?php endif; ?>
-                                    <?php if ($client['notes']): ?>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Notes</div>
-                                        <div class="detail-value"><?php echo nl2br(htmlspecialchars($client['notes'])); ?></div>
-                                    </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Action Buttons -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="action-buttons">
-                                <a href="client-edit.php?id=<?php echo $client_id; ?>" class="btn btn-warning">
-                                    <i class="fas fa-edit"></i> Edit Client
-                                </a>
-                                <a href="../clients/Quotes/generate-quote.php?client_id=<?php echo $client_id; ?>" class="btn btn-success">
-                                    <i class="fas fa-file-invoice"></i> Create Quote
-                                </a>
-                                <a href="client-quote.php?id=<?php echo $client_id; ?>" class="btn btn-info">
-                                    <i class="fas fa-list"></i> View Quotes
-                                </a>
-                                <a href="clients.php" class="btn btn-secondary">
-                                    <i class="fas fa-arrow-left"></i> Back to Clients
-                                </a>
-                                <br\>
+                                    <form method="POST">
+                                        <!-- First Name -->
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <label>First Name <span class="required">*</span></label>
+                                                <input type="text" class="form-control" name="first_name" required value="<?php echo $_POST['first_name'] ?? ''; ?>" placeholder="Enter first name">
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label>Last Name</label>
+                                                <input type="text" class="form-control" name="last_name" value="<?php echo $_POST['last_name'] ?? ''; ?>" placeholder="Enter last name">
+                                            </div>
+                                        </div>
+
+                                        <!-- Email & Phone -->
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <label>Email <span class="required">*</span></label>
+                                                <input type="email" class="form-control" name="email" required value="<?php echo $_POST['email'] ?? ''; ?>" placeholder="Enter email address">
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label>Phone</label>
+                                                <input type="text" class="form-control" name="phone_no" value="<?php echo $_POST['phone_no'] ?? ''; ?>" placeholder="Enter phone number">
+                                            </div>
+                                        </div>
+
+                                        <!-- Address 
+                                        <div class="form-group">
+                                            <label>Address</label>
+                                            <textarea class="form-control" name="address" rows="2" placeholder="Enter street address">"<"?php echo $_POST['address'] ?? ''; ?></textarea>
+                                        </div>
+                                        
+
+                                         City, Province, Postal Code 
+                                        <div class="form-row">
+                                            <div class="form-group col-md-4">
+                                                <label>City</label>
+                                                <input type="text" class="form-control" name="city" value="<-?php echo $_POST['city'] ?? ''; ?>" placeholder="Enter city">
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label>Province</label>
+                                                <input type="text" class="form-control" name="province" value="<-?php echo $_POST['province'] ?? ''; ?>" placeholder="Enter province">
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label>Postal Code</label>
+                                                <input type="text" class="form-control" name="postal_code" value="<-?php echo $_POST['postal_code'] ?? ''; ?>" placeholder="Enter postal code">
+                                            </div>
+                                        </div>
+
+                                        Country & Industry 
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <label>Country</label>
+                                                <input type="text" class="form-control" name="country" value="<-?php echo $_POST['country'] ?? 'South Africa'; ?>" placeholder="Enter country">
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label>Industry</label>
+                                                <input type="text" class="form-control" name="industry" value="<-?php echo $_POST['industry'] ?? ''; ?>" placeholder="e.g. Technology, Finance, Healthcare">
+                                            </div>
+                                        </div>
+                                            -->
+
+                                        <!-- Staff Type & Status -->
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <label>Staff Type</label>
+                                                <select class="form-control" name="staff_type">
+                                                    <option value="Development" <?php echo (isset($_POST['staff_type']) && $_POST['staff_type'] == 'Development') ? 'selected' : ''; ?>>Development</option>
+                                                    <option value="HR" <?php echo (isset($_POST['staff_type']) && $_POST['staff_type'] == 'HR') ? 'selected' : ''; ?>>HR</option>
+                                                    <option value="Marketing" <?php echo (isset($_POST['staff_type']) && $_POST['staff_type'] == 'Marketing') ? 'selected' : ''; ?>>Marketing</option>
+                                                     </select>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label>Status</label>
+                                                <select class="form-control" name="status">
+                                                    <option value="active" <?php echo (isset($_POST['status']) && $_POST['status'] == 'active') ? 'selected' : ''; ?>>Active</option>
+                                                    <option value="inactive" <?php echo (isset($_POST['status']) && $_POST['status'] == 'inactive') ? 'selected' : ''; ?>>Inactive</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <!-- Action Buttons -->
+                                        <div style="display:flex; gap:1rem; margin-top:1.5rem; padding-top:1rem; border-top:1px solid #e3e6f0;">
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-save"></i> Save Staff
+                                            </button>
+                                            <a href="view-staff.php" class="btn btn-secondary">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div>
-          </div>
                 <!-- End of container-fluid -->
 
                 <!-- Footer -->
@@ -1811,7 +1771,6 @@ form.user .btn-user {
             <!-- End of Main Content -->
         </div>
         <!-- End of Content Wrapper -->
-         
     </div>
     <!-- End of Page Wrapper -->
 
@@ -1836,34 +1795,12 @@ form.user .btn-user {
         $("#sidebar-container").load("../sidebar.php", function() {
             console.log("Sidebar loaded successfully");
             
-            // Set active state for current page
-            $('#sidebar-container .nav-item').removeClass('active');
-            $('#sidebar-container .nav-item a[href*="client-view"]').closest('.nav-item').addClass('active');
-            
-            // Find and highlight the parent menu if in submenu
-            $('#sidebar-container .nav-item .collapse .collapse-item').each(function() {
-                if ($(this).attr('href') && $(this).attr('href').includes('client-view')) {
-                    $(this).addClass('active');
-                    $(this).closest('.collapse').addClass('show');
-                    $(this).closest('.nav-item').find('.nav-link').removeClass('collapsed');
-                }
-            });
-            
-            // Sidebar toggle for all screen sizes - no effects
-            $('#sidebarToggleTop').on('click', function(e) {
-                e.preventDefault();
-                
-                // Toggle the sidebar container
+            // Fix sidebar toggle for mobile - toggle the container
+            $('#sidebarToggleTop').on('click', function() {
                 $('#sidebar-container').toggleClass('toggled');
-                
-                // Toggle the sidebar collapse class
-                $('.sidebar').toggleClass('collapsed');
-                
                 // Add overlay for mobile
                 if ($('#sidebar-container').hasClass('toggled')) {
-                    if ($(window).width() <= 768) {
-                        $('body').append('<div class="sidebar-overlay active"></div>');
-                    }
+                    $('body').append('<div class="sidebar-overlay active"></div>');
                 } else {
                     $('.sidebar-overlay').remove();
                 }
@@ -1872,16 +1809,7 @@ form.user .btn-user {
             // Close sidebar when clicking overlay
             $(document).on('click', '.sidebar-overlay', function() {
                 $('#sidebar-container').removeClass('toggled');
-                $('.sidebar').removeClass('collapsed');
                 $('.sidebar-overlay').remove();
-            });
-            
-            // Handle window resize - remove toggled state on desktop
-            $(window).resize(function() {
-                if ($(window).width() > 768) {
-                    $('#sidebar-container').removeClass('toggled');
-                    $('.sidebar-overlay').remove();
-                }
             });
         });
     });
