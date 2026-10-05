@@ -3,55 +3,48 @@
 session_start();
 require_once 'db.php';
 
-// Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Check if form was submitted
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
-    
-    // Debug: Check if values are received
-    // echo "Email: $email, Password: $password"; // Uncomment to test
-    
-    if (empty($email) || empty($password)) {
-        header('Location: login.html?error=Please fill in all fields');
-        exit();
-    }
-    
-    try {
-        // Check if staff exists
-        $stmt = $conn->prepare("SELECT * FROM staff WHERE email = ?");
-        $stmt->execute([$email]);
-        $staff = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        // Debug: Check if user found
-        // var_dump($staff); // Uncomment to test
-        
-        if ($staff && password_verify($password, $staff['password'])) {
-            // Login successful
-            $_SESSION['staff_id'] = $staff['id'];
-            $_SESSION['first_name'] = $staff['first_name'];
-            $_SESSION['last_name'] = $staff['last_name'];
-            $_SESSION['email'] = $staff['email'];
-            $_SESSION['logged_in'] = true;
-            
-            // Redirect to dashboard
-            header('Location: index.php');
-            exit();
-        } else {
-            // Invalid credentials
-            header('Location: login.html?error=Invalid email or password');
-            exit();
-        }
-    } catch(PDOException $e) {
-        header('Location: login.html?error=Database error: ' . $e->getMessage());
-        exit();
-    }
-} else {
-    // If not POST, redirect to login page
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: login.html');
+    exit();
+}
+
+$email    = trim($_POST['email'] ?? '');
+$password = $_POST['password'] ?? '';
+
+if (empty($email) || empty($password)) {
+    header('Location: login.html?error=1');
+    exit();
+}
+
+try {
+    $stmt = $conn->prepare("SELECT * FROM staff WHERE email = ?");
+    $stmt->execute([$email]);
+    $staff = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($staff && password_verify($password, $staff['password'])) {
+        // Prevent session fixation
+        session_regenerate_id(true);
+
+        $_SESSION['staff_id']   = $staff['id'];
+        $_SESSION['first_name'] = $staff['first_name'];
+        $_SESSION['last_name']  = $staff['last_name'];
+        $_SESSION['email']      = $staff['email'];
+        $_SESSION['logged_in']  = true;
+        $_SESSION['staff_type'] = $staff['staff_type'];
+
+        header('Location: index.php');
+        exit();
+    }
+
+    header('Location: login.html?error=1');
+    exit();
+
+} catch (PDOException $e) {
+    error_log('Login DB error: ' . $e->getMessage());
+    header('Location: login.html?error=1');
     exit();
 }
 ?>

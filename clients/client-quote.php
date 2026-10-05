@@ -371,7 +371,7 @@ $first_name = $_SESSION['first_name'] ?? 'User';
     <script>
     $(function() {
         // Load sidebar from external file
-        $("#sidebar-container").load("../sidebar.html", function() {
+        $("#sidebar-container").load("../sidebar.php", function() {
             console.log("Sidebar loaded successfully");
             
             // Set active state for current page

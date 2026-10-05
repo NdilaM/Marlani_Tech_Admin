@@ -862,7 +862,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
     // Load sidebar from external file
     $(function() {
-        $("#sidebar-container").load("../../sidebar.html", function() {
+        $("#sidebar-container").load("../../sidebar.php", function() {
             console.log("Sidebar loaded successfully");
             
             // Set active state for current page
