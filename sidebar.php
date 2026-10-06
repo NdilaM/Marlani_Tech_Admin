@@ -652,6 +652,7 @@ ul.navbar-nav { list-style: none; padding-left: 0; margin-bottom: 0; }
             </div>
         </li>
 
+         <hr class="sidebar-divider">
         <!-- Staff Management – admin only -->
         <li class="nav-item" data-role="admin">
             <a class="nav-link collapsed" href="#" data-toggle="collapse"
@@ -671,25 +672,56 @@ ul.navbar-nav { list-style: none; padding-left: 0; margin-bottom: 0; }
             </div>
         </li>
 
-        <!-- Components – admin & manager -->
-        <li class="nav-item" data-role="admin,manager">
+        <hr class="sidebar-divider">
+        <!-- Finance – admin & manager only -->
+        <li class="nav-item" data-role="admin,manager,superadmin">
             <a class="nav-link collapsed" href="#" data-toggle="collapse"
-               data-target="#collapseTwo" aria-expanded="false"
-               aria-controls="collapseTwo">
-                <i class="fas fa-fw fa-cog"></i>
-                <span>Components</span>
+            data-target="#collapseFinance" aria-expanded="false"
+            aria-controls="collapseFinance">
+                <i class="fas fa-dollar-sign"></i>
+                <span>Finance</span>
             </a>
-            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
-                 data-parent="#accordionSidebar">
+            <div id="collapseFinance" class="collapse" aria-labelledby="headingFinance"
+                data-parent="#accordionSidebar">
                 <div class="py-2 collapse-inner rounded">
-                    <h6 class="collapse-header">Custom Components:</h6>
-                    <a class="collapse-item" href="/Marlani_Tech_Admin/buttons.html">Buttons</a>
-                    <a class="collapse-item" href="/Marlani_Tech_Admin/cards.html">Cards</a>
+                    <h6 class="collapse-header">Finance Options:</h6>
+                    <a class="collapse-item" href="/Marlani_Tech_Admin/Finances/Overview.php">Overview</a>
+                    <a class="collapse-item" href="/Marlani_Tech_Admin/Finances/Invoices.php">Invoices</a>
+                    <a class="collapse-item" href="/Marlani_Tech_Admin/Finances/Outstanding.php">Outstanding</a>
+                    <a class="collapse-item" href="/Marlani_Tech_Admin/Finances/Payments.php">Payments</a>
+                    <a class="collapse-item" href="/Marlani_Tech_Admin/Finances/finance_reports.php">Reports</a>
+                    <a class="collapse-item" href="/Marlani_Tech_Admin/Finances/salaries.php">Salaries</a>
                 </div>
             </div>
         </li>
 
         <hr class="sidebar-divider">
+        <!-- Support – all roles -->
+        <li class="nav-item" data-role="admin,manager,staff">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse"
+            data-target="#collapseSupport" aria-expanded="false"
+            aria-controls="collapseSupport">
+                <i class="fas fa-headset"></i>
+                <span>Support</span>
+            </a>
+            <div id="collapseSupport" class="collapse" aria-labelledby="headingSupport"
+                data-parent="#accordionSidebar">
+                <div class="py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Support Options:</h6>
+
+                    <!-- Everyone -->
+                    <a class="collapse-item"
+                    href="/Marlani_Tech_Admin/Support/create_ticket.php">Create Ticket</a>
+
+                    <!-- Admin / manager only -->
+                    <a class="collapse-item" data-role="admin,manager,superadmin"
+                    href="/Marlani_Tech_Admin/Support/support.php">View Tickets</a>
+                </div>
+            </div>
+        </li>
+
+        <hr class="sidebar-divider">
+
         <div class="sidebar-heading">Addons</div>
 
         <!-- Pages – all roles -->
@@ -714,6 +746,8 @@ ul.navbar-nav { list-style: none; padding-left: 0; margin-bottom: 0; }
                 </div>
             </div>
         </li>
+
+
 
         <!-- Charts – admin & manager -->
         <li class="nav-item" data-role="admin,manager">
